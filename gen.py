@@ -40,7 +40,7 @@ def get_data():
   GDRIVE_FILE_ID = '0B6vslVxoQlvIZXZqYWFSc0htMVU'
   if not osp.exists(DB_FNAME):
     try:
-      colorprint(Color.BLUE,'\tdownloading data (82 M) from: '+DATA_URL)
+      colorprint(Color.BLUE,'\tdownloading data (23 M) from: '+DATA_URL)
       import wget, tarfile
       out_fname = 'data.tar.gz'
       wget.download(DATA_URL,out=out_fname)
