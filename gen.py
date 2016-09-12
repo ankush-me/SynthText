@@ -29,7 +29,7 @@ SECS_PER_IMG = 5 #max time per image in seconds
 DATA_PATH = 'data'
 DB_FNAME = osp.join(DATA_PATH,'dset.h5')
 # url of the data (google-drive public file):
-DATA_URL = 'http://tinyurl.com/jb4jacw'
+DATA_URL = 'http://www.robots.ox.ac.uk/~ankush/data.tar.gz'
 OUT_FILE = 'results/SynthText.h5'
 
 def get_data():
@@ -40,7 +40,7 @@ def get_data():
   GDRIVE_FILE_ID = '0B6vslVxoQlvIZXZqYWFSc0htMVU'
   if not osp.exists(DB_FNAME):
     try:
-      colorprint(Color.BLUE,'\tdownloading data (23 M) from: '+DATA_URL)
+      colorprint(Color.BLUE,'\tdownloading data (56 M) from: '+DATA_URL)
       import wget, tarfile
       out_fname = 'data.tar.gz'
       wget.download(DATA_URL,out=out_fname)

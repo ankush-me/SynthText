@@ -13,7 +13,7 @@ pygame, opencv (cv2), PIL (Image), numpy, matplotlib, h5py, scipy
 python gen.py --viz
 ```
 
-This will download a data file (~23M) hosted on Google Drive to the `data` directory. This data file includes:
+This will download a data file (~56M) hosted on Google Drive to the `data` directory. This data file includes:
 
   - **dset.h5**: This is a sample h5 file which contains a set of 5 images along with their depth and segmentation information. Note, this is just given as an example; you are encouraged to add more images (along with their depth and segmentation information) to this database for your own use.
   - **data/fonts**: three sample fonts (add more fonts to this folder and then update `fonts/fontlist.txt` with their paths).
