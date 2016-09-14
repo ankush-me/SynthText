@@ -37,7 +37,6 @@ def get_data():
   Download the image,depth and segmentation data:
   Returns, the h5 database.
   """
-  GDRIVE_FILE_ID = '0B6vslVxoQlvIZXZqYWFSc0htMVU'
   if not osp.exists(DB_FNAME):
     try:
       colorprint(Color.BLUE,'\tdownloading data (56 M) from: '+DATA_URL)
