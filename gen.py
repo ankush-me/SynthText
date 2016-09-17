@@ -39,7 +39,9 @@ def get_data():
   """
   if not osp.exists(DB_FNAME):
     try:
-      colorprint(Color.BLUE,'\tdownloading data (56 M) from: '+DATA_URL)
+      colorprint(Color.BLUE,'\tdownloading data (56 M) from: '+DATA_URL,bold=True)
+      print
+      sys.stdout.flush()
       import wget, tarfile
       out_fname = 'data.tar.gz'
       wget.download(DATA_URL,out=out_fname)
@@ -47,9 +49,11 @@ def get_data():
       tar.extractall()
       tar.close()
       os.remove(out_fname)
-      colorprint(Color.BLUE,'\tdata saved at:'+DB_FNAME)
+      colorprint(Color.BLUE,'\n\tdata saved at:'+DB_FNAME,bold=True)
+      sys.stdout.flush()
     except:
       print colorize(Color.RED,'Data not found and have problems downloading.',bold=True)
+      sys.stdout.flush()
       sys.exit(-1)
   # open the h5 file and return:
   return h5py.File(DB_FNAME,'r')

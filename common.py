@@ -21,8 +21,8 @@ def colorize(num, string, bold=False, highlight = False):
     if bold: attr.append('1')
     return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), string)
 
-def colorprint(colorcode, text, o=sys.stdout):
-    o.write(colorize(colorcode, text))
+def colorprint(colorcode, text, o=sys.stdout, bold=False):
+    o.write(colorize(colorcode, text, bold=bold))
 
 def warn(msg):
     print colorize(Color.YELLOW, msg)
