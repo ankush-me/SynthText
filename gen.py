@@ -18,6 +18,7 @@ import os, sys, traceback
 import os.path as osp
 from synthgen import *
 from common import *
+import wget, tarfile
 
 
 ## Define some configuration variables:
@@ -42,7 +43,6 @@ def get_data():
       colorprint(Color.BLUE,'\tdownloading data (56 M) from: '+DATA_URL,bold=True)
       print
       sys.stdout.flush()
-      import wget, tarfile
       out_fname = 'data.tar.gz'
       wget.download(DATA_URL,out=out_fname)
       tar = tarfile.open(out_fname)
