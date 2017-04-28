@@ -5,7 +5,7 @@
 
 % Author: Ankush Gupta
 
-function process()
+function predict_depth()
     % setup vlfeat
     run( '../libs/vlfeat-0.9.18/toolbox/vl_setup');
     % setup matconvnet
