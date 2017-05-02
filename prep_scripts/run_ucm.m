@@ -14,7 +14,7 @@ imsize = [240,NaN];
 run(fullfile(mcg_dir,'install.m'));
 
 % get the image names:
-imname = dir(fullfile(img_dir,'*');
+imname = dir(fullfile(img_dir,'*'));
 imname = {imname.name};
 
 % process:
