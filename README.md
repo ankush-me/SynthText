@@ -45,10 +45,10 @@ For an explanation of the fields in `dset.h5` (e.g.: `seg`,`area`,`label`), plea
 The 8,000 background images used in the paper, along with their segmentation and depth masks, have been uploaded here:
 `http://zeus.robots.ox.ac.uk/textspot/static/db/<filename>`, where, `<filename>` can be:
 
-- `imnames.cp` : names of filtered files, i.e., those files which do not contain text
-- `bg_img.tar.gz` : compressed image files (more than 8000, so only use the filtered ones in imnames.cp)
-- `depth.h5` : depth maps
-- `seg.h5` : segmentation maps
+- `imnames.cp` [180K]: names of filtered files, i.e., those files which do not contain text
+- `bg_img.tar.gz` [8.9G]: compressed image files (more than 8000, so only use the filtered ones in imnames.cp)
+- `depth.h5` [15G]: depth maps
+- `seg.h5` [6.9G]: segmentation maps
 
 Note: I do not own the copyright to these images.
 
