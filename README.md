@@ -43,8 +43,7 @@ For an explanation of the fields in `dset.h5` (e.g.: `seg`,`area`,`label`), plea
 
 ### [update] Pre-processed Background Images
 The 8,000 background images used in the paper, along with their segmentation and depth masks, have been uploaded here:
-http://zeus.robots.ox.ac.uk/textspot/static/db/<filename>
-where, `<filename>` can be:
+`http://zeus.robots.ox.ac.uk/textspot/static/db/<filename>`, where, `<filename>` can be:
 
 - `imnames.cp` : names of filtered files, i.e., those files which do not contain text
 - `bg_img.tar.gz` : compressed image files (more than 8000, so only use the filtered ones in imnames.cp)
