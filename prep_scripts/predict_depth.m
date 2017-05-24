@@ -37,7 +37,7 @@ function predict_depth()
         opts.useGpu=false;
     end
 
-    imnames = dir(fullfile(opts.imdir),'*');
+    imnames = dir(fullfile(opts.imdir,'*'));
     imnames = {imnames.name};
     N = numel(imnames);
     for i = 1:N
