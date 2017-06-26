@@ -41,7 +41,7 @@ Segmentation and depth-maps are required to use new images as background. Sample
 
 For an explanation of the fields in `dset.h5` (e.g.: `seg`,`area`,`label`), please check this [comment](https://github.com/ankush-me/SynthText/issues/5#issuecomment-274490044).
 
-### [update] Pre-processed Background Images
+### Pre-processed Background Images
 The 8,000 background images used in the paper, along with their segmentation and depth masks, have been uploaded here:
 `http://zeus.robots.ox.ac.uk/textspot/static/db/<filename>`, where, `<filename>` can be:
 
@@ -51,6 +51,9 @@ The 8,000 background images used in the paper, along with their segmentation and
 - `seg.h5` [6.9G]: segmentation maps
 
 Note: I do not own the copyright to these images.
+
+### Generating Samples with Text in non-Latin (English) Scripts
+@JarveeLee has modified the pipeline for generating samples with Chinese text [here](https://github.com/JarveeLee/SynthText_Chinese_version).
 
 ### Further Information
 Please refer to the paper for more information, or contact me (email address in the paper).
