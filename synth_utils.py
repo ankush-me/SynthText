@@ -182,7 +182,7 @@ class DepthCamera(object):
         n = ij.shape[0]
         ij = ij.astype('float')
         xy_ray = (ij-center[None,:]) / DepthCamera.f
-        z = -plane[3]/(xy_ray.dot(plane[:2])+plane[2])
+        z = -plane[2]/(xy_ray.dot(plane[:2])+plane[3])
         xyz = np.c_[xy_ray, np.ones(n)] * z[:,None]
         return xyz
 
