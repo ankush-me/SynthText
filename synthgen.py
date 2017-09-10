@@ -256,7 +256,7 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
     ROW = np.max(ssd.pdist(np.atleast_2d(boxR[:,0]).T))
     COL = np.max(ssd.pdist(np.atleast_2d(boxR[:,1]).T))
 
-    place_mask = 255*np.ones((np.ceil(COL)+pad,np.ceil(ROW)+pad),'uint8')
+    place_mask = 255*np.ones((int(np.ceil(COL))+pad, int(np.ceil(ROW))+pad), 'uint8')
 
     pts_fp_i32 = [(pts_fp[i]+minxy[None,:]).astype('int32') for i in xrange(len(pts_fp))]
     cv2.drawContours(place_mask,pts_fp_i32,-1,0,
