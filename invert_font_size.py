@@ -4,7 +4,7 @@
 
 import pygame
 from pygame import freetype
-from synth2 import FontState
+from text_utils import FontState
 import numpy as np 
 import matplotlib.pyplot as plt 
 import cPickle as cp
