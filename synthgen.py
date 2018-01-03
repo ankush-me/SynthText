@@ -78,7 +78,8 @@ class TextRegions(object):
 
             coords = np.c_[xs,ys].astype('float32')
             rect = cv2.minAreaRect(coords)          
-            box = np.array(cv2.cv.BoxPoints(rect))
+            #box = np.array(cv2.cv.BoxPoints(rect))
+            box = np.array(cv2.boxPoints(rect))
             h,w,rot = TextRegions.get_hw(box,return_rot=True)
 
             f = (h > TextRegions.minHeight 
@@ -91,7 +92,7 @@ class TextRegions(object):
         # filter bad regions:
         filt = np.array(filt)
         area = area[filt]
-        R = [R[i] for i in xrange(len(R)) if filt[i]]
+        R = [R[i] for i in range(len(R)) if filt[i]]
 
         # sort the regions based on areas:
         aidx = np.argsort(-area)
@@ -111,7 +112,7 @@ class TextRegions(object):
 
         y_m,x_m = np.where(mask)
         mask_idx = np.zeros_like(mask,'int32')
-        for i in xrange(len(y_m)):
+        for i in range(len(y_m)):
             mask_idx[y_m[i],x_m[i]] = i
 
         xp,xn = np.zeros_like(mask), np.zeros_like(mask)
@@ -136,7 +137,7 @@ class TextRegions(object):
         Y = np.transpose(np.c_[ys,ys+s,ys-s,ys+s,ys-s][:,:,None],(1,2,0))
         sample_idx = np.concatenate([Y,X],axis=1)
         mask_nn_idx = np.zeros((5,sample_idx.shape[-1]),'int32')
-        for i in xrange(sample_idx.shape[-1]):
+        for i in range(sample_idx.shape[-1]):
             mask_nn_idx[:,i] = mask_idx[sample_idx[:,:,i][:,0],sample_idx[:,:,i][:,1]]
         return mask_nn_idx
 
@@ -215,9 +216,9 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
     REGION : DICT output of TextRegions.get_regions
     PAD : number of pixels to pad the placement-mask by
     """
-    contour,hier = cv2.findContours(mask.copy().astype('uint8'),
-                                    mode=cv2.cv.CV_RETR_CCOMP,
-                                    method=cv2.cv.CV_CHAIN_APPROX_SIMPLE)
+    _,contour,hier = cv2.findContours(mask.copy().astype('uint8'),
+                                    mode=cv2.RETR_CCOMP,
+                                    method=cv2.CHAIN_APPROX_SIMPLE)
     contour = [np.squeeze(c).astype('float') for c in contour]
     #plane = np.array([plane[1],plane[0],plane[2],plane[3]])
     H,W = mask.shape[:2]
@@ -226,7 +227,7 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
     pts,pts_fp = [],[]
     center = np.array([W,H])/2
     n_front = np.array([0.0,0.0,-1.0])
-    for i in xrange(len(contour)):
+    for i in range(len(contour)):
         cnt_ij = contour[i]
         xyz = su.DepthCamera.plane2xyz(center, cnt_ij, plane)
         R = su.rot3d(plane[:3],n_front)
@@ -236,7 +237,7 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
 
     # unrotate in 2D plane:
     rect = cv2.minAreaRect(pts_fp[0].copy().astype('float32'))
-    box = np.array(cv2.cv.BoxPoints(rect))
+    box = np.array(cv2.boxPoints(rect))
     R2d = su.unrotate2d(box.copy())
     box = np.vstack([box,box[0,:]]) #close the box for visualization
 
@@ -248,7 +249,7 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
     # the same scale as the target region:
     s = rescale_frontoparallel(pts_tmp,boxR,pts[0])
     boxR *= s
-    for i in xrange(len(pts_fp)):
+    for i in range(len(pts_fp)):
         pts_fp[i] = s*((pts_fp[i]-mu[None,:]).dot(R2d.T) + mu[None,:])
 
     # paint the unrotated contour points:
@@ -258,9 +259,9 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
 
     place_mask = 255*np.ones((int(np.ceil(COL))+pad, int(np.ceil(ROW))+pad), 'uint8')
 
-    pts_fp_i32 = [(pts_fp[i]+minxy[None,:]).astype('int32') for i in xrange(len(pts_fp))]
+    pts_fp_i32 = [(pts_fp[i]+minxy[None,:]).astype('int32') for i in range(len(pts_fp))]
     cv2.drawContours(place_mask,pts_fp_i32,-1,0,
-                     thickness=cv2.cv.CV_FILLED,
+                     thickness=cv2.FILLED,
                      lineType=8,hierarchy=hier)
     
     if not TextRegions.filter_rectified((~place_mask).astype('float')/255):
@@ -280,7 +281,7 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
         plt.subplot(1,2,2)
         plt.imshow(~place_mask)
         plt.hold(True)
-        for i in xrange(len(pts_fp_i32)):
+        for i in range(len(pts_fp_i32)):
             plt.scatter(pts_fp_i32[i][:,0],pts_fp_i32[i][:,1],
                         edgecolors='none',facecolor='g',alpha=0.5)
         plt.show()
@@ -318,7 +319,7 @@ def viz_masks(fignum,rgb,seg,depth,label):
     plt.close(fignum)
     plt.figure(fignum)
     ims = [rgb,mim,depth,img]
-    for i in xrange(len(ims)):
+    for i in range(len(ims)):
         plt.subplot(2,2,i+1)
         plt.imshow(ims[i])
     plt.show(block=False)
@@ -351,10 +352,10 @@ def viz_textbb(fignum,text_im, bb_list,alpha=1.0):
     plt.imshow(text_im)
     plt.hold(True)
     H,W = text_im.shape[:2]
-    for i in xrange(len(bb_list)):
+    for i in range(len(bb_list)):
         bbs = bb_list[i]
         ni = bbs.shape[-1]
-        for j in xrange(ni):
+        for j in range(ni):
             bb = bbs[:,:,j]
             bb = np.c_[bb,bb[:,0]]
             plt.plot(bb[0,:], bb[1,:], 'r', linewidth=2, alpha=alpha)
@@ -552,14 +553,14 @@ class RendererV3(object):
         bb_idx = np.r_[0, np.cumsum([len(w) for w in wrds])]
         wordBB = np.zeros((2,4,len(wrds)), 'float32')
         
-        for i in xrange(len(wrds)):
+        for i in range(len(wrds)):
             cc = charBB[:,:,bb_idx[i]:bb_idx[i+1]]
 
             # fit a rotated-rectangle:
             # change shape from 2x4xn_i -> (4*n_i)x2
             cc = np.squeeze(np.concatenate(np.dsplit(cc,cc.shape[-1]),axis=1)).T.astype('float32')
             rect = cv2.minAreaRect(cc.copy())
-            box = np.array(cv2.cv.BoxPoints(rect))
+            box = np.array(cv2.boxPoints(rect))
 
             # find the permutation of box-coordinates which
             # are "aligned" appropriately with the character-bb.
@@ -570,7 +571,7 @@ class RendererV3(object):
                             cc[3,:]].T
             perm4 = np.array(list(itertools.permutations(np.arange(4))))
             dists = []
-            for pidx in xrange(perm4.shape[0]):
+            for pidx in range(perm4.shape[0]):
                 d = np.sum(np.linalg.norm(box[perm4[pidx],:]-cc_tblr,axis=1))
                 dists.append(d)
             wordBB[:,:,i] = box[perm4[np.argmin(dists)],:].T
@@ -626,10 +627,10 @@ class RendererV3(object):
             return []
 
         res = []
-        for i in xrange(ninstance):
+        for i in range(ninstance):
             place_masks = copy.deepcopy(regions['place_mask'])
 
-            print colorize(Color.CYAN, " ** instance # : %d"%i)
+            print (colorize(Color.CYAN, " ** instance # : %d"%i))
 
             idict = {'img':[], 'charBB':None, 'wordBB':None, 'txt':None}
 
@@ -659,8 +660,8 @@ class RendererV3(object):
                             txt_render_res = self.place_text(img,place_masks[ireg],
                                                              regions['homography'][ireg],
                                                              regions['homography_inv'][ireg])
-                except TimeoutException, msg:
-                    print msg
+                except TimeoutException as msg:
+                    print (msg)
                     continue
                 except:
                     traceback.print_exc()
