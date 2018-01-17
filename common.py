@@ -25,17 +25,17 @@ def colorprint(colorcode, text, o=sys.stdout, bold=False):
     o.write(colorize(colorcode, text, bold=bold))
 
 def warn(msg):
-    print colorize(Color.YELLOW, msg)
+    print (colorize(Color.YELLOW, msg))
 
 def error(msg):
-    print colorize(Color.RED, msg)
+    print (colorize(Color.RED, msg))
 
 # http://stackoverflow.com/questions/366682/how-to-limit-execution-time-of-a-function-call-in-python
 class TimeoutException(Exception): pass
 @contextmanager
 def time_limit(seconds):
     def signal_handler(signum, frame):
-        raise TimeoutException, colorize(Color.RED, "   *** Timed out!", highlight=True)
+        raise TimeoutException(colorize(Color.RED, "   *** Timed out!", highlight=True))
     signal.signal(signal.SIGALRM, signal_handler)
     signal.alarm(seconds)
     try:
