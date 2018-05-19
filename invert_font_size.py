@@ -21,7 +21,7 @@ models = {} #linear model
 
 FS = FontState()
 #plt.figure()
-#plt.hold(True)
+##plt.hold(True)
 for i in xrange(len(FS.fonts)):
 	print i
 	font = freetype.Font(FS.fonts[i], size=12)

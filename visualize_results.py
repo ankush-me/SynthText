@@ -24,7 +24,7 @@ def viz_textbb(text_im, charBB_list, wordBB, alpha=1.0):
     plt.close(1)
     plt.figure(1)
     plt.imshow(text_im)
-    plt.hold(True)
+    #plt.hold(True)
     H,W = text_im.shape[:2]
 
     # plot the character-BB:
