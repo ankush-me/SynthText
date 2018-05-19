@@ -4,10 +4,10 @@
 
 import pygame
 from pygame import freetype
-from text_utils import FontState
+import os
 import numpy as np 
 import matplotlib.pyplot as plt 
-import cPickle as cp
+import pickle as cp
 
 
 pygame.init()
@@ -19,21 +19,21 @@ A = np.c_[ys,np.ones_like(ys)]
 xs = []
 models = {} #linear model
 
-FS = FontState()
-#plt.figure()
+FONT_LIST = './data/fonts/fontlist.txt'
+fonts = [os.path.join('./data/fonts',f.strip()) for f in open(FONT_LIST)]
 ##plt.hold(True)
-for i in range(len(FS.fonts)):
-	print(i)
-	font = freetype.Font(FS.fonts[i], size=12)
+for i in range(len(fonts)):
+	print(fonts[i])
+	font = freetype.Font(fonts[i], size=12)
 	h = []
 	for y in ys:
-		h.append(font.get_sized_glyph_height(y))
+		h.append(font.get_sized_glyph_height(int(y)))
 	h = np.array(h)
 	m,_,_,_ = np.linalg.lstsq(A,h)
 	models[font.name] = m
 	xs.append(h)
 
-with open('font_px2pt.cp','w') as f:
+with open('./data/models/font_px2pt.cp','wb') as f:
 	cp.dump(models,f)
 #plt.plot(xs,ys[i])
 #plt.show()

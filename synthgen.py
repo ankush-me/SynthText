@@ -443,6 +443,7 @@ class RendererV3(object):
         bb  : 2x4xn matrix of BB after perspective
         text: string of text -- for excluding symbols/punctuations.
         """
+        return True
         h0 = np.linalg.norm(bb0[:,3,:] - bb0[:,0,:], axis=0)
         w0 = np.linalg.norm(bb0[:,1,:] - bb0[:,0,:], axis=0)
         hw0 = np.c_[h0,w0]
@@ -471,6 +472,7 @@ class RendererV3(object):
 
 
     def get_min_h(selg, bb, text):
+        return True
         # find min-height:
         h = np.linalg.norm(bb[:,3,:] - bb[:,0,:], axis=0)
         # remove newlines and spaces:
@@ -549,34 +551,34 @@ class RendererV3(object):
         output : 2x4xm matrix of BB coordinates,
                  where, m == number of words.
         """
-        wrds = text.split()
-        bb_idx = np.r_[0, np.cumsum([len(w) for w in wrds])]
-        wordBB = np.zeros((2,4,len(wrds)), 'float32')
+        # wrds = text.split()
+        # bb_idx = np.r_[0, np.cumsum([len(w) for w in wrds])]
+        # wordBB = np.zeros((2,4,len(wrds)), 'float32')
         
-        for i in range(len(wrds)):
-            cc = charBB[:,:,bb_idx[i]:bb_idx[i+1]]
+        # for i in range(len(wrds)):
+        #     cc = charBB[:,:,bb_idx[i]:bb_idx[i+1]]
 
-            # fit a rotated-rectangle:
-            # change shape from 2x4xn_i -> (4*n_i)x2
-            cc = np.squeeze(np.concatenate(np.dsplit(cc,cc.shape[-1]),axis=1)).T.astype('float32')
-            rect = cv2.minAreaRect(cc.copy())
-            box = np.array(cv2.boxPoints(rect))
+        #     # fit a rotated-rectangle:
+        #     # change shape from 2x4xn_i -> (4*n_i)x2
+        #     cc = np.squeeze(np.concatenate(np.dsplit(cc,cc.shape[-1]),axis=1)).T.astype('float32')
+        #     rect = cv2.minAreaRect(cc.copy())
+        #     box = np.array(cv2.boxPoints(rect))
 
-            # find the permutation of box-coordinates which
-            # are "aligned" appropriately with the character-bb.
-            # (exhaustive search over all possible assignments):
-            cc_tblr = np.c_[cc[0,:],
-                            cc[-3,:],
-                            cc[-2,:],
-                            cc[3,:]].T
-            perm4 = np.array(list(itertools.permutations(np.arange(4))))
-            dists = []
-            for pidx in range(perm4.shape[0]):
-                d = np.sum(np.linalg.norm(box[perm4[pidx],:]-cc_tblr,axis=1))
-                dists.append(d)
-            wordBB[:,:,i] = box[perm4[np.argmin(dists)],:].T
+        #     # find the permutation of box-coordinates which
+        #     # are "aligned" appropriately with the character-bb.
+        #     # (exhaustive search over all possible assignments):
+        #     cc_tblr = np.c_[cc[0,:],
+        #                     cc[-3,:],
+        #                     cc[-2,:],
+        #                     cc[3,:]].T
+        #     perm4 = np.array(list(itertools.permutations(np.arange(4))))
+        #     dists = []
+        #     for pidx in range(perm4.shape[0]):
+        #         d = np.sum(np.linalg.norm(box[perm4[pidx],:]-cc_tblr,axis=1))
+        #         dists.append(d)
+        #     wordBB[:,:,i] = box[perm4[np.argmin(dists)],:].T
 
-        return wordBB
+        return charBB
 
 
     def render_text(self,rgb,depth,seg,area,label,ninstance=1,viz=False):
@@ -689,5 +691,5 @@ class RendererV3(object):
                     viz_masks(2,img,seg,depth,regions['label'])
                     # viz_regions(rgb.copy(),xyz,seg,regions['coeff'],regions['label'])
                     if i < ninstance-1:
-                        raw_input(colorize(Color.BLUE,'continue?',True))                    
+                        input(colorize(Color.BLUE,'continue?',True))                    
         return res

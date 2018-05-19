@@ -16,6 +16,8 @@ from PIL import Image
 import math
 from common import *
 import pickle
+import codecs
+import fribidi
 
 def sample_weighted(p_dict):
     ps = list(p_dict.keys())
@@ -137,17 +139,20 @@ class RenderFont(object):
         for l in lines:
             x = 0 # carriage-return
             y += line_spacing # line-feed
-
-            for ch in l: # render each character
-                if ch.isspace(): # just shift
-                    x += space.width
-                else:
+            words = l.split(' ')
+            for word in words:
+                word = fribidi.log2vis(word, None, fribidi.ParType.RTL)
+                print('---->> ', word)
+            # for ch in l: # render each character
+            #     if ch.isspace(): # just shift
+            #         x += space.width
+            #     else:
                     # render the character
-                    ch_bounds = font.render_to(surf, (x,y), ch)
-                    ch_bounds.x = x + ch_bounds.x
-                    ch_bounds.y = y - ch_bounds.y
-                    x += ch_bounds.width
-                    bbs.append(np.array(ch_bounds))
+                ch_bounds = font.render_to(surf, (x,y), word)
+                ch_bounds.x = x + ch_bounds.x
+                ch_bounds.y = y - ch_bounds.y
+                x += ch_bounds.width + space.width
+                bbs.append(np.array(ch_bounds))
 
         # get the union of characters for cropping:
         r0 = pygame.Rect(bbs[0])
@@ -167,13 +172,17 @@ class RenderFont(object):
         """
         use curved baseline for rendering word
         """
+        # word_text = word_text[::-1]
         wl = len(word_text)
         isword = len(word_text.split())==1
+        print(isword)
 
         # do curved iff, the length of the word <= 10
         if not isword or wl > 10 or np.random.rand() > self.p_curved:
             return self.render_multiline(font, word_text)
 
+        word_text = fribidi.log2vis(word_text, None, fribidi.ParType.RTL)
+        print('<<<<<<<', word_text)
         # create the surface:
         lspace = font.get_sized_height() + 1
         lbound = font.get_rect(word_text)
@@ -186,14 +195,14 @@ class RenderFont(object):
         curve = [BS['curve'](i-mid_idx) for i in range(wl)]
         curve[mid_idx] = -np.sum(curve) / (wl-1)
         rots  = [-int(math.degrees(math.atan(BS['diff'](i-mid_idx)/(font.size/2)))) for i in range(wl)]
-
+        
         bbs = []
         # place middle char
-        rect = font.get_rect(word_text[mid_idx])
+        rect = font.get_rect(word_text)
         rect.centerx = surf.get_rect().centerx
         rect.centery = surf.get_rect().centery + rect.height
         rect.centery +=  curve[mid_idx]
-        ch_bounds = font.render_to(surf, rect, word_text[mid_idx], rotation=rots[mid_idx])
+        ch_bounds = font.render_to(surf, rect, word_text, rotation=rots[mid_idx])
         ch_bounds.x = rect.x + ch_bounds.x
         ch_bounds.y = rect.y - ch_bounds.y
         mid_ch_bb = np.array(ch_bounds)
@@ -201,36 +210,40 @@ class RenderFont(object):
         # render chars to the left and right:
         last_rect = rect
         ch_idx = []
-        for i in range(wl):
-            #skip the middle character
-            if i==mid_idx: 
-                bbs.append(mid_ch_bb)
-                ch_idx.append(i)
-                continue
 
-            if i < mid_idx: #left-chars
-                i = mid_idx-1-i
-            elif i==mid_idx+1: #right-chars begin
-                last_rect = rect
+        bbs.append(mid_ch_bb)
+        ch_idx.append(0)
 
-            ch_idx.append(i)
-            ch = word_text[i]
+        # for i in range(wl):
+        #     #skip the middle character
+        #     if i==mid_idx: 
+        #         bbs.append(mid_ch_bb)
+        #         ch_idx.append(i)
+        #         continue
 
-            newrect = font.get_rect(ch)
-            newrect.y = last_rect.y
-            if i > mid_idx:
-                newrect.topleft = (last_rect.topright[0]+2, newrect.topleft[1])
-            else:
-                newrect.topright = (last_rect.topleft[0]-2, newrect.topleft[1])
-            newrect.centery = max(newrect.height, min(fsize[1] - newrect.height, newrect.centery + curve[i]))
-            try:
-                bbrect = font.render_to(surf, newrect, ch, rotation=rots[i])
-            except ValueError:
-                bbrect = font.render_to(surf, newrect, ch)
-            bbrect.x = newrect.x + bbrect.x
-            bbrect.y = newrect.y - bbrect.y
-            bbs.append(np.array(bbrect))
-            last_rect = newrect
+        #     if i < mid_idx: #left-chars
+        #         i = mid_idx-1-i
+        #     elif i==mid_idx+1: #right-chars begin
+        #         last_rect = rect
+
+        #     ch_idx.append(i)
+        #     ch = word_text[i]
+
+        #     newrect = font.get_rect(ch)
+        #     newrect.y = last_rect.y
+        #     if i > mid_idx:
+        #         newrect.topleft = (last_rect.topright[0]+2, newrect.topleft[1])
+        #     else:
+        #         newrect.topright = (last_rect.topleft[0]-2, newrect.topleft[1])
+        #     newrect.centery = max(newrect.height, min(fsize[1] - newrect.height, newrect.centery + curve[i]))
+        #     try:
+        #         bbrect = font.render_to(surf, newrect, ch, rotation=rots[i])
+        #     except ValueError:
+        #         bbrect = font.render_to(surf, newrect, ch)
+        #     bbrect.x = newrect.x + bbrect.x
+        #     bbrect.y = newrect.y - bbrect.y
+        #     bbs.append(np.array(bbrect))
+        #     last_rect = newrect
         
         # correct the bounding-box order:
         bbs_sequence_order = [None for i in ch_idx]
@@ -522,9 +535,13 @@ class TextSource(object):
                       'LINE':self.sample_line,
                       'PARA':self.sample_para}
 
-        with open(fn,'r') as f:
-            self.txt = [l.strip() for l in f.readlines()]
-
+        # with open(fn,'r') as f:
+        #     self.txt = [l.strip() for l in f.readlines()]
+        with codecs.open(fn, 'r', "utf-8") as f:
+            self.txt = []
+            for line in f:
+                self.txt.append(line.strip())
+        
         # distribution over line/words for LINE/PARA:
         self.p_line_nline = np.array([0.85, 0.10, 0.05])
         self.p_line_nword = [4,3,12]  # normal: (mu, std)
