@@ -53,7 +53,8 @@ The 8,000 background images used in the paper, along with their segmentation and
 Note: I do not own the copyright to these images.
 
 ### Generating Samples with Text in non-Latin (English) Scripts
-@JarveeLee has modified the pipeline for generating samples with Chinese text [here](https://github.com/JarveeLee/SynthText_Chinese_version).
+- @JarveeLee has modified the pipeline for generating samples with Chinese text [here](https://github.com/JarveeLee/SynthText_Chinese_version).
+- @adavoudi has modified it for arabic/persian script, which flows from right-to-left [here](https://github.com/adavoudi/SynthText).
 
 ### Further Information
 Please refer to the paper for more information, or contact me (email address in the paper).
