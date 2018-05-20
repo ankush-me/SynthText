@@ -271,10 +271,10 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
     H,_ = cv2.findHomography(pts[0].astype('float32').copy(),
                              pts_fp_i32[0].astype('float32').copy(),
                              method=0)
-
     Hinv,_ = cv2.findHomography(pts_fp_i32[0].astype('float32').copy(),
                                 pts[0].astype('float32').copy(),
                                 method=0)
+                                
     if viz:
         plt.subplot(1,2,1)
         plt.imshow(mask)
@@ -443,7 +443,7 @@ class RendererV3(object):
         bb  : 2x4xn matrix of BB after perspective
         text: string of text -- for excluding symbols/punctuations.
         """
-        return True
+        # return True
         h0 = np.linalg.norm(bb0[:,3,:] - bb0[:,0,:], axis=0)
         w0 = np.linalg.norm(bb0[:,1,:] - bb0[:,0,:], axis=0)
         hw0 = np.c_[h0,w0]
@@ -451,14 +451,16 @@ class RendererV3(object):
         h = np.linalg.norm(bb[:,3,:] - bb[:,0,:], axis=0)
         w = np.linalg.norm(bb[:,1,:] - bb[:,0,:], axis=0)
         hw = np.c_[h,w]
-
+        
+        if np.sum(hw0[:,1] == 0) > 0 or np.sum(hw[:,1] == 0) > 0:
+            return False
         # remove newlines and spaces:
-        text = ''.join(text.split())
-        assert len(text)==bb.shape[-1]
+        # text = ''.join(text.split())
+        # assert len(text)==bb.shape[-1]
 
-        alnum = np.array([ch.isalnum() for ch in text])
-        hw0 = hw0[alnum,:]
-        hw = hw[alnum,:]
+        # alnum = np.array([ch.isalnum() for ch in text])
+        # hw0 = hw0[alnum,:]
+        # hw = hw[alnum,:]
 
         min_h0, min_h = np.min(hw0[:,0]), np.min(hw[:,0])
         asp0, asp = hw0[:,0]/hw0[:,1], hw[:,0]/hw[:,1]
@@ -471,30 +473,32 @@ class RendererV3(object):
         return is_good
 
 
-    def get_min_h(selg, bb, text):
-        return True
+    def get_min_h(self, bb, text):
+        # return True
         # find min-height:
         h = np.linalg.norm(bb[:,3,:] - bb[:,0,:], axis=0)
         # remove newlines and spaces:
         text = ''.join(text.split())
-        assert len(text)==bb.shape[-1]
+        # assert len(text)==bb.shape[-1]
 
-        alnum = np.array([ch.isalnum() for ch in text])
-        h = h[alnum]
+        # alnum = np.array([ch.isalnum() for ch in text])
+        # h = h[alnum]
         return np.min(h)
 
 
     def feather(self, text_mask, min_h):
         # determine the gaussian-blur std:
-        if min_h <= 15 :
-            bsz = 0.25
-            ksz=1
-        elif 15 < min_h < 30:
-            bsz = max(0.30, 0.5 + 0.1*np.random.randn())
-            ksz = 3
-        else:
-            bsz = max(0.5, 1.5 + 0.5*np.random.randn())
-            ksz = 5
+        bsz = 0.5 * np.random.rand()
+        ksz = np.random.choice([1,3,5])
+        # if min_h <= 15 :
+        #     bsz = 0.25
+        #     ksz=1
+        # elif 15 < min_h < 30:
+        #     bsz = max(0.30, 0.5 + 0.1*np.random.randn())
+        #     ksz = 3
+        # else:
+        #     bsz = max(0.5, 1.5 + 0.5*np.random.randn())
+        #     ksz = 5
         return cv2.GaussianBlur(text_mask,(ksz,ksz),bsz)
 
     def place_text(self,rgb,collision_mask,H,Hinv):

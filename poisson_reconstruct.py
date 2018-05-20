@@ -87,7 +87,7 @@ def poisson_solve(gx,gy,bnd):
 
     return img
 
-def blit_images(im_top,im_back,scale_grad=1.0,mode='max'):
+def blit_images(im_top,im_back,scale_grad=1.0,mode='src'):
     """
     combine images using poission editing.
     IM_TOP and IM_BACK should be of the same size.

@@ -142,12 +142,6 @@ class RenderFont(object):
             words = l.split(' ')
             for word in words:
                 word = fribidi.log2vis(word, None, fribidi.ParType.RTL)
-                print('---->> ', word)
-            # for ch in l: # render each character
-            #     if ch.isspace(): # just shift
-            #         x += space.width
-            #     else:
-                    # render the character
                 ch_bounds = font.render_to(surf, (x,y), word)
                 ch_bounds.x = x + ch_bounds.x
                 ch_bounds.y = y - ch_bounds.y
@@ -173,16 +167,15 @@ class RenderFont(object):
         use curved baseline for rendering word
         """
         # word_text = word_text[::-1]
+        word_text = word_text.replace('\u200c', ' ')
         wl = len(word_text)
         isword = len(word_text.split())==1
-        print(isword)
 
         # do curved iff, the length of the word <= 10
         if not isword or wl > 10 or np.random.rand() > self.p_curved:
             return self.render_multiline(font, word_text)
 
         word_text = fribidi.log2vis(word_text, None, fribidi.ParType.RTL)
-        print('<<<<<<<', word_text)
         # create the surface:
         lspace = font.get_sized_height() + 1
         lbound = font.get_rect(word_text)
@@ -208,43 +201,10 @@ class RenderFont(object):
         mid_ch_bb = np.array(ch_bounds)
 
         # render chars to the left and right:
-        last_rect = rect
         ch_idx = []
-
         bbs.append(mid_ch_bb)
         ch_idx.append(0)
 
-        # for i in range(wl):
-        #     #skip the middle character
-        #     if i==mid_idx: 
-        #         bbs.append(mid_ch_bb)
-        #         ch_idx.append(i)
-        #         continue
-
-        #     if i < mid_idx: #left-chars
-        #         i = mid_idx-1-i
-        #     elif i==mid_idx+1: #right-chars begin
-        #         last_rect = rect
-
-        #     ch_idx.append(i)
-        #     ch = word_text[i]
-
-        #     newrect = font.get_rect(ch)
-        #     newrect.y = last_rect.y
-        #     if i > mid_idx:
-        #         newrect.topleft = (last_rect.topright[0]+2, newrect.topleft[1])
-        #     else:
-        #         newrect.topright = (last_rect.topleft[0]-2, newrect.topleft[1])
-        #     newrect.centery = max(newrect.height, min(fsize[1] - newrect.height, newrect.centery + curve[i]))
-        #     try:
-        #         bbrect = font.render_to(surf, newrect, ch, rotation=rots[i])
-        #     except ValueError:
-        #         bbrect = font.render_to(surf, newrect, ch)
-        #     bbrect.x = newrect.x + bbrect.x
-        #     bbrect.y = newrect.y - bbrect.y
-        #     bbs.append(np.array(bbrect))
-        #     last_rect = newrect
-        
         # correct the bounding-box order:
         bbs_sequence_order = [None for i in ch_idx]
         for idx,i in enumerate(ch_idx):

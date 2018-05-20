@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding=UTF-8
-
 """
 an implementation of Unicode Bidirectional Algorithm, using GNU FriBidi
 
@@ -9,6 +6,10 @@ http://fribidi.org/
 
 GNU FriBidi is an implementation of Unicode Bidirectional Algorithm (bidi).
 http://unicode.org/reports/tr9/
+
+
+This file is originally written by behnam at https://github.com/behnam/python-fribidi.
+I just slightly modified it to support python3
 
 """
 
