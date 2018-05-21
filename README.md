@@ -1,4 +1,15 @@
 # SynthText
+This a modified version of [Ankush's code](https://github.com/ankush-me/SynthText) for generating synthetic text images which support right-to-left languages such as Persian and Arabic.
+
+As in Persian and Arabic, words are made using connected letters, this code only outputs the word level bounding boxes. 
+
+**A sample output of the code**
+![Persian Synthetic Scene-Text Samples](sample_fa.png "Persian Synthetic Samples")
+
+
+The rest of the README is from the original repository
+------------------
+
 Code for generating synthetic text images as described in ["Synthetic Data for Text Localisation in Natural Images", Ankush Gupta, Andrea Vedaldi, Andrew Zisserman, CVPR 2016](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
 
 
