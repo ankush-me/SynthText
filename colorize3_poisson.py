@@ -51,7 +51,8 @@ class FontColor(object):
         # convert color-means from RGB to LAB for better nearest neighbour
         # computations:
         self.colorsLAB = np.r_[self.colorsRGB[:,0:3], self.colorsRGB[:,6:9]].astype('uint8')
-        self.colorsLAB = np.squeeze(cv.cvtColor(self.colorsLAB[None,:,:],cv.cv.CV_RGB2Lab))
+        # self.colorsLAB = np.squeeze(cv.cvtColor(self.colorsLAB[None,:,:],cv.cv.CV_RGB2Lab))
+        self.colorsLAB = np.squeeze(cv.cvtColor(self.colorsLAB[None,:,:],cv.COLOR_RGB2Lab))
 
 
     def sample_normal(self, col_mean, col_std):
@@ -70,7 +71,7 @@ class FontColor(object):
         each of these is a 3-vector.
         """
         bg_orig = bg_mat.copy()
-        bg_mat = cv.cvtColor(bg_mat, cv.cv.CV_RGB2Lab)
+        bg_mat = cv.cvtColor(bg_mat, cv.COLOR_RGB2Lab)
         bg_mat = np.reshape(bg_mat, (np.prod(bg_mat.shape[:2]),3))
         bg_mean = np.mean(bg_mat,axis=0)
 
@@ -253,7 +254,7 @@ class Colorize(object):
         """
         choice = np.random.choice(3)
 
-        col_text = cv.cvtColor(col_text, cv.cv.CV_RGB2HSV)
+        col_text = cv.cvtColor(col_text, cv.COLOR_BGR2HSV)
         col_text = np.reshape(col_text, (np.prod(col_text.shape[:2]),3))
         col_text = np.mean(col_text,axis=0).astype('uint8')
 
