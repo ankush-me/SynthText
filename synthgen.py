@@ -12,6 +12,8 @@ import h5py
 from PIL import Image
 import numpy as np 
 #import mayavi.mlab as mym
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt 
 import os.path as osp
 import scipy.ndimage as sim

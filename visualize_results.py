@@ -9,6 +9,8 @@ from __future__ import division
 import os
 import os.path as osp
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt 
 import h5py 
 from common import *
