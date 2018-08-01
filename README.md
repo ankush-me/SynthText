@@ -8,8 +8,14 @@ Code for generating synthetic text images as described in ["Synthetic Data for T
 The library is written in Python. The main dependencies are:
 
 ```
-pygame, opencv (cv2), PIL (Image), numpy, matplotlib, h5py, scipy
+pygame, opencv (cv3), PIL (Image), numpy, matplotlib, h5py, scipy
 ```
+
+please use 
+```
+pip install -r requirements.txt
+```
+to install all dependencies
 
 ### Generating samples
 
