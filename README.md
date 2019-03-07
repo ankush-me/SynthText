@@ -5,7 +5,9 @@ Code for generating synthetic text images as described in ["Synthetic Data for T
 **Synthetic Scene-Text Image Samples**
 ![Synthetic Scene-Text Samples](samples.png "Synthetic Samples")
 
-The library is written in Python. The main dependencies are:
+The code in the `master` branch is for Python2. Python3 is supported in the `python3` branch.
+
+The main dependencies are:
 
 ```
 pygame, opencv (cv2), PIL (Image), numpy, matplotlib, h5py, scipy
