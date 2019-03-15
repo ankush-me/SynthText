@@ -57,6 +57,7 @@ Note: I do not own the copyright to these images.
 ### Generating Samples with Text in non-Latin (English) Scripts
 - @JarveeLee has modified the pipeline for generating samples with Chinese text [here](https://github.com/JarveeLee/SynthText_Chinese_version).
 - @adavoudi has modified it for arabic/persian script, which flows from right-to-left [here](https://github.com/adavoudi/SynthText).
+- @MichalBusta has adapted it for a number of languages (e.g. Bangla, Arabic, Chinese, Japanese, Korean) [here](https://github.com/MichalBusta/E2E-MLT).
 
 ### Further Information
 Please refer to the paper for more information, or contact me (email address in the paper).
