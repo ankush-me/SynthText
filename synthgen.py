@@ -11,7 +11,6 @@ import cv2
 import h5py
 from PIL import Image
 import numpy as np
-# import mayavi.mlab as mym
 import matplotlib.pyplot as plt
 import os.path as osp
 import scipy.ndimage as sim
@@ -21,8 +20,7 @@ import text_utils as tu
 from colorize3_poisson import Colorize
 from common import *
 import traceback, itertools
-import datetime
-import scipy.misc
+import imageio
 
 
 class TextRegions(object):
@@ -315,11 +313,11 @@ def viz_masks(fignum, rgb, seg, depth, label):
         rgb_rand = (255 * np.random.rand(3)).astype('uint8')
         img[mask] = rgb_rand[None, None, :]
 
-    #import scipy
-    # scipy.misc.imsave('seg.png', mim)
-    # scipy.misc.imsave('depth.png', depth)
-    # scipy.misc.imsave('txt.png', rgb)
-    # scipy.misc.imsave('reg.png', img)
+    # import scipy
+    # imageio.imwrite('seg.png', mim)
+    # imageio.imwrite('depth.png', depth)
+    # imageio.imwrite('txt.png', rgb)
+    # imageio.imwrite('reg.png', img)
 
     plt.close(fignum)
     plt.figure(fignum)
@@ -375,13 +373,9 @@ class RendererV3(object):
     def __init__(self, data_dir, max_time=None):
         self.text_renderer = tu.RenderFont(data_dir)
         self.colorizer = Colorize(data_dir)
-        # self.colorizerV2 = colorV2.Colorize(data_dir)
-
         self.min_char_height = 8  # px
         self.min_asp_ratio = 0.4  #
-
         self.max_text_regions = 7
-
         self.max_time = max_time
 
     def filter_regions(self, regions, filt):
@@ -528,13 +522,9 @@ class RendererV3(object):
 
         # feathering:
         text_mask = self.feather(text_mask, min_h)
-        name = str(datetime.datetime.now())
-        scipy.misc.imsave("./img/" + name + "_mask" + ".png", text_mask)
-
         im_final = self.colorizer.color(rgb, [text_mask], np.array([min_h]))
-        scipy.misc.imsave("./img/" + name + "_img" + ".png", im_final)
 
-        return im_final, text, bb, collision_mask
+        return im_final, text, bb, text_mask
 
     def get_num_text_regions(self, nregions):
         # return nregions
@@ -585,26 +575,31 @@ class RendererV3(object):
 
         return wordBB
 
-    def render_text(self, rgb, depth, seg, area, label, ninstance=1, viz=False):
+    def render_text(self, rgb, depth, seg, area, label, ninstance=1):
         """
-        rgb   : HxWx3 image rgb values (uint8)
-        depth : HxW depth values (float)
-        seg   : HxW segmentation region masks
-        area  : number of pixels in each region
-        label : region labels == unique(seg) / {0}
-               i.e., indices of pixels in SEG which
-               constitute a region mask
-        ninstance : no of times image should be
-                    used to place text.
+        This method is rendering and
 
-        @return:
+        Args:
+            rgb   : HxWx3 image rgb values (uint8)
+            depth : HxW depth values (float)
+            seg   : HxW segmentation region masks
+            area  : number of pixels in each region
+            label : region labels == unique(seg) / {0}
+                   i.e., indices of pixels in SEG which
+                   constitute a region mask
+            ninstance : number of times image should be
+                        used to place text.
+
+        Returns:
             res : a list of dictionaries, one for each of 
                   the image instances.
                   Each dictionary has the following structure:
-                      'img' : rgb-image with text on it.
-                      'bb'  : 2x4xn matrix of bounding-boxes
+                      'img'  : rgb-image with text on it.
+                      'bb'   : 2x4xn matrix of bounding-boxes
                               for each character in the image.
-                      'txt' : a list of strings.
+                      'txt'  : a list of strings.
+                      'masks': a list of masks of text placed on the image.
+                              Shape of each mask is the same as shape of original image.
 
                   The correspondence b/w bb and txt is that
                   i-th non-space white-character in txt is at bb[:,:,i].
@@ -634,6 +629,7 @@ class RendererV3(object):
 
         res = []
         for i in range(ninstance):
+            # place_masks - is a local copy of list of collision masks. it's updated, but is not really used.
             place_masks = copy.deepcopy(regions['place_mask'])
 
             print(colorize(Color.CYAN, " ** instance # : %d" % i))
@@ -650,6 +646,7 @@ class RendererV3(object):
             img = rgb.copy()
             itext = []
             ibb = []
+            masks = []
 
             # process regions: 
             num_txt_regions = len(reg_idx)
@@ -679,8 +676,8 @@ class RendererV3(object):
                     placed = True
                     img, text, bb, collision_mask = txt_render_res
                     # update the region collision mask:
-                    place_masks[ireg] = collision_mask
-                    # TODO: accumulate masks here.
+                    # place_masks[ireg] = collision_mask  # no point of doing that, already updated inside place_text method
+                    masks.append(collision_mask)
                     # store the result:
                     itext.append(text)
                     ibb.append(bb)
@@ -691,11 +688,7 @@ class RendererV3(object):
                 idict['txt'] = itext
                 idict['charBB'] = np.concatenate(ibb, axis=2)
                 idict['wordBB'] = self.char2wordBB(idict['charBB'].copy(), ' '.join(itext))
+                idict['masks'] = masks
+                idict['labeled_region'] = regions['label']
                 res.append(idict.copy())
-                if viz:
-                    viz_textbb(1, img, [idict['wordBB']], alpha=1.0)
-                    viz_masks(2, img, seg, depth, regions['label'])
-                    # viz_regions(rgb.copy(),xyz,seg,regions['coeff'],regions['label'])
-                    if i < ninstance - 1:
-                        raw_input(colorize(Color.BLUE, 'continue?', True))
         return res
