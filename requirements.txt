@@ -2,6 +2,7 @@ cycler==0.10.0
 Django==2.2.1
 h5py==2.9.0
 image==1.5.27
+imageio==2.5.0
 kiwisolver==1.1.0
 matplotlib==3.0.3
 numpy==1.16.3
