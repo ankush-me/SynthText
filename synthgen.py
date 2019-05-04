@@ -636,8 +636,7 @@ class RendererV3(object):
 
             idict = {'img': [], 'charBB': None, 'wordBB': None, 'txt': None}
 
-            m = self.get_num_text_regions(
-                nregions)  # np.arange(nregions)#min(nregions, 5*ninstance*self.max_text_regions))
+            m = self.get_num_text_regions(nregions)
             reg_idx = np.arange(min(2 * m, nregions))
             np.random.shuffle(reg_idx)
             reg_idx = reg_idx[:m]

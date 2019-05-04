@@ -22,6 +22,7 @@ from common import *
 import wget
 import tarfile
 from functools import reduce
+import re
 
 # Define some configuration variables:
 NUM_IMG = -1  # number of images to use for generation (-1 to use all available):
@@ -36,7 +37,6 @@ DB_FNAME = osp.join(DATA_PATH, 'dset.h5')
 DATA_URL = 'http://www.robots.ox.ac.uk/~ankush/data.tar.gz'
 OUT_FILE = 'results/SynthText.h5'
 
-DEBUG = True
 MASKS_DIR = "./masks"
 
 
@@ -86,7 +86,7 @@ def add_res_to_db(imgname, res, db):
         db['data'][dname].attrs['txt'] = L
 
 
-def main(viz=False, output_masks=False):
+def main(viz=False, debug=False, output_masks=False):
     """
     Entry point.
 
@@ -120,8 +120,6 @@ def main(viz=False, output_masks=False):
     renderer = RendererV3(DATA_PATH, max_time=SECS_PER_IMG)
     for i in range(start_idx, end_idx):
         imname = imnames[i]
-        if DEBUG:
-            print("    Processing " + str(imname) + "...\n")
 
         try:
             # get the image:
@@ -141,21 +139,26 @@ def main(viz=False, output_masks=False):
             sz = depth.shape[:2][::-1]
             img = np.array(img.resize(sz, Image.ANTIALIAS))
             seg = np.array(Image.fromarray(seg).resize(sz, Image.NEAREST))
-
             print(colorize(Color.RED, '%d of %d' % (i, end_idx - 1), bold=True))
+
+            if debug:
+                print("\n    Processing " + str(imname) + "...")
+
             res = renderer.render_text(img, depth, seg, area, label,
                                   ninstance=INSTANCE_PER_IMAGE)
             if len(res) > 0:
                 # non-empty : successful in placing text:
                 add_res_to_db(imname, res, out_db)
+                if debug:
+                    print("    Success. " + str(len(res[0]['txt'])) + " texts placed:")
+                    print("    Texts:" + ";".join(res[0]['txt']) + "")
+                    ws = re.sub(' +', ' ', (" ".join(res[0]['txt']).replace("\n", " "))).strip().split(" ")
+                    print("    Words: #" +str(len(ws)) + " " + ";".join(ws) + "")
+                    print("    Words bounding boxes: " + str(res[0]['wordBB'].shape) + "")
 
             if len(res) > 0 and output_masks:
                 # executed only if --output-masks flag is set
                 prefix = MASKS_DIR + "/" + imname
-                f = open(prefix + "_text.txt", "w+")
-                for s in res[0]['txt']:
-                    f.write(s + "\n")
-                f.close()
 
                 imageio.imwrite(prefix + "_original.png", img)
                 imageio.imwrite(prefix + "_with_text.png", res[0]['img'])
@@ -165,6 +168,17 @@ def main(viz=False, output_masks=False):
                 # since we just added values of pixels, need to bring it back to 0..255 range.
                 merged = np.divide(merged, len(res[0]['masks']))
                 imageio.imwrite(prefix + "_mask.png", merged)
+
+                # print bounding boxes
+                f = open(prefix + "_bb.txt", "w+")
+                bbs = res[0]['wordBB']
+                boxes = np.swapaxes(bbs, 2, 0)
+                words = re.sub(' +', ' ', ' '.join(res[0]['txt']).replace("\n", " ")).strip().split(" ")
+                assert len(boxes) == len(words)
+                for j in range(len(boxes)):
+                    as_strings = np.char.mod('%f', boxes[j].flatten())
+                    f.write(",".join(as_strings) + "," + words[j] + "\n")
+                f.close()
 
             # visualize the output:
             if viz:
@@ -194,5 +208,7 @@ if __name__ == '__main__':
                         help='flag for turning on visualizations')
     parser.add_argument('--output-masks', action='store_true', dest='output_masks', default=False,
                         help='flag for turning on output of masks')
+    parser.add_argument('--debug', action='store_true', dest='debug', default=False,
+                        help='flag for turning on debug output')
     args = parser.parse_args()
-    main(viz=args.viz, output_masks=args.output_masks)
+    main(viz=args.viz, debug=args.debug, output_masks=args.output_masks)
