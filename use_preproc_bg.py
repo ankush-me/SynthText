@@ -24,7 +24,7 @@ for imname in imnames:
   if imname not in filtered_imnames: continue
   
   # get the colour image:
-  img = Image.open(osp.join(imname)).convert('RGB')
+  img = Image.open(osp.join(im_dir, imname)).convert('RGB')
   
   # get depth:
   depth = depth_db[imname][:].T
