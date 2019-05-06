@@ -48,9 +48,14 @@ The 8,000 background images used in the paper, along with their segmentation and
 `http://www.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>`, where, `<filename>` can be:
 
 - `imnames.cp` [180K]: names of filtered files, i.e., those files which do not contain text
-- `bg_img.tar.gz` [8.9G]: compressed image files (more than 8000, so only use the filtered ones in imnames.cp)
-- `depth.h5` [15G]: depth maps
+- `bg_img.tar.gz` [8.9G]: compressed image files (more than 8000, so only use the filtered ones in imnames.cp). md5 hash: `3eac26af5f731792c9d95838a23b5047  bg_img.tar.gz`.
+- `depth.h5` [15G]: depth maps. md5 hash: `af97f6e6c9651af4efb7b1ff12a5dc1b depth.h5`.
 - `seg.h5` [6.9G]: segmentation maps
+
+Note: due to large size, `depth.h5` is also available for download as 3-part split-files of 5G each.
+These part files are named: `depth.h5-00, depth.h5-01, depth.h5-0`. Download using the path above, and put them together using `cat depth.h5-0* > depth.h5`.
+
+[`use_preproc_bg.py`](https://github.com/ankush-me/SynthText/blob/master/use_preproc_bg.py) provides sample code for reading this data.
 
 Note: I do not own the copyright to these images.
 
