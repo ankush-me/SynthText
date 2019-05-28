@@ -48,7 +48,7 @@ def add_res_to_db(imgname, res, db):
         db['data'][dname].attrs['txt'] = L
 
 
-def main(viz=False, debug=False, output_masks=False):
+def main(viz=False, debug=False, output_masks=False, data_path=None):
     """
     Entry point.
 
@@ -64,7 +64,8 @@ def main(viz=False, debug=False, output_masks=False):
     # open databases:
     print(colorize(Color.BLUE, 'getting data..', bold=True))
 
-    provider = DateProvider()
+    provider = DateProvider(data_path)
+
     # db = DateProvider.get_data()
     print(colorize(Color.BLUE, '\t-> done', bold=True))
 
@@ -175,5 +176,7 @@ if __name__ == '__main__':
                         help='flag for turning on output of masks')
     parser.add_argument('--debug', action='store_true', dest='debug', default=False,
                         help='flag for turning on debug output')
+    parser.add_argument("--data", type=str, dest='data_path', default=None,
+                        help="absolute path to data directory containing images, segmaps and depths")
     args = parser.parse_args()
-    main(viz=args.viz, debug=args.debug, output_masks=args.output_masks)
+    main(viz=args.viz, debug=args.debug, output_masks=args.output_masks, data_path=args.data_path)
