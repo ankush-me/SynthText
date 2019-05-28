@@ -43,7 +43,6 @@ def add_res_to_db(imgname, res, db):
         db['data'].create_dataset(dname, data=res[i]['img'])
         db['data'][dname].attrs['charBB'] = res[i]['charBB']
         db['data'][dname].attrs['wordBB'] = res[i]['wordBB']
-        # db['data'][dname].attrs['txt'] = res[i]['txt']
         L = res[i]['txt']
         L = [n.encode("ascii", "ignore") for n in L]
         db['data'][dname].attrs['txt'] = L
@@ -64,7 +63,9 @@ def main(viz=False, debug=False, output_masks=False):
 
     # open databases:
     print(colorize(Color.BLUE, 'getting data..', bold=True))
-    db = DateProvider.get_data()
+
+    provider = DateProvider()
+    # db = DateProvider.get_data()
     print(colorize(Color.BLUE, '\t-> done', bold=True))
 
     # open the output h5 file:
@@ -73,7 +74,7 @@ def main(viz=False, debug=False, output_masks=False):
     print(colorize(Color.GREEN, 'Storing the output in: ' + OUT_FILE, bold=True))
 
     # get the names of the image files in the dataset:
-    imnames = sorted(db['image'].keys())
+    imnames = provider.get_imnames()
     N = len(imnames)
     global NUM_IMG
     if NUM_IMG < 0:
@@ -86,17 +87,16 @@ def main(viz=False, debug=False, output_masks=False):
 
         try:
             # get the image:
-            img = Image.fromarray(db['image'][imname][:])
+            img = provider.get_image(imname)
             # get the pre-computed depth:
             #  there are 2 estimates of depth (represented as 2 "channels")
             #  here we are using the second one (in some cases it might be
             #  useful to use the other one):
-            depth = db['depth'][imname][:].T
-            depth = depth[:, :, 1]
+            depth = provider.get_depth(imname)
             # get segmentation:
-            seg = db['seg'][imname][:].astype('float32')
-            area = db['seg'][imname].attrs['area']  # number of pixels in each region
-            label = db['seg'][imname].attrs['label']
+            seg = provider.get_segmap(imname)[:].astype('float32')
+            area = provider.get_segmap(imname).attrs['area']  # number of pixels in each region
+            label = provider.get_segmap(imname).attrs['label']
 
             # re-size uniformly:
             sz = depth.shape[:2][::-1]
@@ -161,7 +161,7 @@ def main(viz=False, debug=False, output_masks=False):
             traceback.print_exc()
             print(colorize(Color.GREEN, '>>>> CONTINUING....', bold=True))
             continue
-    db.close()
+    provider.close()
     out_db.close()
 
 
