@@ -21,7 +21,7 @@ from data_provider import DateProvider
 
 
 # Define some configuration variables:
-NUM_IMG = -1  # number of images to use for generation (-1 to use all available):
+NUM_IMG = 1  # number of images to use for generation (-1 to use all available):
 INSTANCE_PER_IMAGE = 1  # number of times to use the same image
 SECS_PER_IMG = 5  # max time per image in seconds
 
@@ -119,6 +119,8 @@ def main(viz=False, debug=False, output_masks=False, data_path=None):
                     ws = re.sub(' +', ' ', (" ".join(res[0]['txt']).replace("\n", " "))).strip().split(" ")
                     print("    Words: #" +str(len(ws)) + " " + ";".join(ws) + "")
                     print("    Words bounding boxes: " + str(res[0]['wordBB'].shape) + "")
+            else:
+                print("    Failure: No text placed.")
 
             if len(res) > 0 and output_masks:
                 ts = str(int(time() * 1000))

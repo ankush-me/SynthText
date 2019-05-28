@@ -1,21 +1,8 @@
-import h5py
-import numpy as np
-from PIL import Image
-import os.path as osp
-# import cPickle as cp
-import imageio
-import numpy as np
-import h5py
 import os
-import sys, traceback
-import os.path as osp
 from synthgen import *
 from common import *
 import wget
 import tarfile
-from functools import reduce
-import re
-from time import time
 
 
 # TODO: move these contants inside DataProvider
@@ -96,7 +83,7 @@ class DateProvider(object):
 
     def get_depth(self, imname: str):
         if self.db is None:
-            return self.depth[imname]  # TODO: test this, maybe need reshaping
+            return self.depth[imname][:].T[:, :, 0]
         else:
             return self.depth[imname][:].T[:, :, 1]
 

@@ -23,6 +23,8 @@ import traceback, itertools
 import imageio
 
 
+DEBUG = True
+
 class TextRegions(object):
     """
     Get region from segmentation which are good for placing
@@ -651,6 +653,10 @@ class RendererV3(object):
             num_txt_regions = len(reg_idx)
             NUM_REP = 5  # re-use each region three times:
             reg_range = np.arange(NUM_REP * num_txt_regions) % num_txt_regions
+
+            if DEBUG:
+                print("    ... try text rendering for %s regions", len(reg_range))
+
             for idx in reg_range:
                 ireg = reg_idx[idx]
                 try:
@@ -672,6 +678,8 @@ class RendererV3(object):
                     continue
 
                 if txt_render_res is not None:
+                    if DEBUG:
+                        print("    ... text rendering attempt finished successfully")
                     placed = True
                     img, text, bb, collision_mask = txt_render_res
                     # update the region collision mask:
