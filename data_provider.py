@@ -40,7 +40,7 @@ class DateProvider(object):
             self.depth_db = h5py.File(osp.join(self.path, path_depth), 'r')
             self.seg_db = h5py.File(osp.join(self.path, path_segmap), 'r')
             self.imnames = sorted(self.depth_db.keys())
-            self.segmap = self.seg_db
+            self.segmap = self.seg_db['mask']
             self.depth = self.depth_db
 
     @staticmethod
