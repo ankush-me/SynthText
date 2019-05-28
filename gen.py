@@ -23,6 +23,8 @@ import wget
 import tarfile
 from functools import reduce
 import re
+from time import time
+
 
 # Define some configuration variables:
 NUM_IMG = -1  # number of images to use for generation (-1 to use all available):
@@ -157,8 +159,10 @@ def main(viz=False, debug=False, output_masks=False):
                     print("    Words bounding boxes: " + str(res[0]['wordBB'].shape) + "")
 
             if len(res) > 0 and output_masks:
+                ts = str(int(time() * 1000))
+
                 # executed only if --output-masks flag is set
-                prefix = MASKS_DIR + "/" + imname
+                prefix = MASKS_DIR + "/" + imname + ts
 
                 imageio.imwrite(prefix + "_original.png", img)
                 imageio.imwrite(prefix + "_with_text.png", res[0]['img'])
