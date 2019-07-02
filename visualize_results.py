@@ -58,7 +58,7 @@ def main(db_fname):
         rgb = db['data'][k][...]
         charBB = db['data'][k].attrs['charBB']
         wordBB = db['data'][k].attrs['wordBB']
-        txt = db['data'][k].attrs['txt']
+        txt = ", ".join(a.decode('utf-8') for a in db['data'][k].attrs['txt'])
 
         viz_textbb(rgb, [charBB], wordBB)
         print ("image name        : ", colorize(Color.RED, k, bold=True))

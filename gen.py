@@ -30,7 +30,7 @@ SECS_PER_IMG = 5 #max time per image in seconds
 DATA_PATH = 'data'
 DB_FNAME = osp.join(DATA_PATH,'dset.h5')
 # url of the data (google-drive public file):
-DATA_URL = 'https://www.dropbox.com/s/gnzbtvdemy06xyq/data.tar.gz?dl=1'
+DATA_URL = 'https://www.dropbox.com/s/nagp2q3twqtyi02/data.zip?dl=1'
 OUT_FILE = 'results/SynthText.h5'
 
 def get_data():
@@ -40,7 +40,7 @@ def get_data():
   """
   if not osp.exists(DB_FNAME):
     try:
-      colorprint(Color.BLUE,'\tdownloading data (56 M) from: '+DATA_URL,bold=True)
+      colorprint(Color.BLUE,'\tdownloading data (24 M) from: '+DATA_URL,bold=True)
       print()
       sys.stdout.flush()
       out_fname = 'data.tar.gz'
@@ -72,7 +72,7 @@ def add_res_to_db(imgname,res,db):
     db['data'][dname].attrs['wordBB'] = res[i]['wordBB']        
     #db['data'][dname].attrs['txt'] = res[i]['txt']
     L = res[i]['txt']
-    L = [n.encode("ascii", "ignore") for n in L]
+    L = [n.encode("utf-8", "ignore") for n in L]
     db['data'][dname].attrs['txt'] = L
 
 

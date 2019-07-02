@@ -6,6 +6,24 @@ As in Persian and Arabic, words are made using connected letters, this code only
 **A sample output of the code**
 ![Persian Synthetic Scene-Text Samples](sample_fa.png "Persian Synthetic Samples")
 
+## Install the necessary libs and create a conda environment
+First install the `fribidi` library
+
+```
+sudo apt install libfribidi-dev
+```
+
+Then create a conda environment from the `environment.yml` file:
+
+```
+conda env create -f environment.yml
+```
+
+Activate the environment with the following command:
+
+```
+conda activate gentext
+```
 
 The rest of the README is from the original repository
 ------------------
