@@ -64,6 +64,7 @@ Note: I do not own the copyright to these images.
 - @adavoudi has modified it for arabic/persian script, which flows from right-to-left [here](https://github.com/adavoudi/SynthText).
 - @MichalBusta has adapted it for a number of languages (e.g. Bangla, Arabic, Chinese, Japanese, Korean) [here](https://github.com/MichalBusta/E2E-MLT).
 - @gachiemchiep has adapted for Japanese [here](https://github.com/gachiemchiep/SynthText).
+- @gungui98 has adapted for Vietnamese [here](https://github.com/gungui98/SynthText).
 
 ### Further Information
 Please refer to the paper for more information, or contact me (email address in the paper).
