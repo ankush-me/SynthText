@@ -65,6 +65,7 @@ Note: I do not own the copyright to these images.
 - @MichalBusta has adapted it for a number of languages (e.g. Bangla, Arabic, Chinese, Japanese, Korean) [here](https://github.com/MichalBusta/E2E-MLT).
 - @gachiemchiep has adapted for Japanese [here](https://github.com/gachiemchiep/SynthText).
 - @gungui98 has adapted for Vietnamese [here](https://github.com/gungui98/SynthText).
+- @	youngkyung has adapted for Korean [here](https://github.com/youngkyung/SynthText_kr).
 
 ### Further Information
 Please refer to the paper for more information, or contact me (email address in the paper).
