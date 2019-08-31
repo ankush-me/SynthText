@@ -48,7 +48,7 @@ The 8,000 background images used in the paper, along with their segmentation and
 `http://www.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>`, where, `<filename>` can be:
 
 |    filenames    | size |                      description                     |             md5 hash             |
-|:--------------- | ----:|:---------------------------------------------------- |:--------------------------------:|
+|:--------------- | ----:|:---------------------------------------------------- |:-------------------------------- |
 | `imnames.cp`    | 180K | names of images which do not contain background text |                                  |
 | `bg_img.tar.gz` | 8.9G | images (filter these using `imnames.cp`)             | 3eac26af5f731792c9d95838a23b5047 |
 | `depth.h5`      |  15G | depth maps                                           | af97f6e6c9651af4efb7b1ff12a5dc1b |
