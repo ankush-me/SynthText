@@ -212,7 +212,6 @@ if __name__=='__main__':
         with sns.axes_style("darkgrid"):
             plt.subplot(2,1,2)
             plt.plot(l_alpha,label='alpha')
-            plt.hold(True)
             plt.plot(l_poisson,label='poisson')
             plt.plot(l_actual,label='actual')
             plt.legend()
@@ -227,7 +226,6 @@ if __name__=='__main__':
         with sns.axes_style("white"):
             plt.subplot(2,1,1)
             plt.imshow(im_alpha[:,:,::-1].astype('uint8'))
-            plt.hold(True)
             plt.plot([0,im_alpha_L.shape[0]-1],[i,i],'r')
             plt.axis('image')
             plt.show()
