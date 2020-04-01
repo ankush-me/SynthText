@@ -216,9 +216,9 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
     REGION : DICT output of TextRegions.get_regions
     PAD : number of pixels to pad the placement-mask by
     """
-    _,contour,hier = cv2.findContours(mask.copy().astype('uint8'),
+    contour,hier = cv2.findContours(mask.copy().astype('uint8'),
                                     mode=cv2.RETR_CCOMP,
-                                    method=cv2.CHAIN_APPROX_SIMPLE)
+                                    method=cv2.CHAIN_APPROX_SIMPLE)[-2:]
     contour = [np.squeeze(c).astype('float') for c in contour]
     #plane = np.array([plane[1],plane[0],plane[2],plane[3]])
     H,W = mask.shape[:2]
@@ -280,7 +280,6 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
         plt.imshow(mask)
         plt.subplot(1,2,2)
         plt.imshow(~place_mask)
-        plt.hold(True)
         for i in range(len(pts_fp_i32)):
             plt.scatter(pts_fp_i32[i][:,0],pts_fp_i32[i][:,1],
                         edgecolors='none',facecolor='g',alpha=0.5)
@@ -350,7 +349,6 @@ def viz_textbb(fignum,text_im, bb_list,alpha=1.0):
     plt.close(fignum)
     plt.figure(fignum)
     plt.imshow(text_im)
-    plt.hold(True)
     H,W = text_im.shape[:2]
     for i in range(len(bb_list)):
         bbs = bb_list[i]
