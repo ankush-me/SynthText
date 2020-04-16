@@ -68,6 +68,7 @@ Note: I do not own the copyright to these images.
 - @gachiemchiep has adapted for Japanese [here](https://github.com/gachiemchiep/SynthText).
 - @gungui98 has adapted for Vietnamese [here](https://github.com/gungui98/SynthText).
 - @youngkyung has adapted for Korean [here](https://github.com/youngkyung/SynthText_kr).
+- @kotomiDu has developed an interactive UI for generating images with text [here](https://github.com/kotomiDu/GameSynthText).
 
 ### Further Information
 Please refer to the paper for more information, or contact me (email address in the paper).
