@@ -45,7 +45,7 @@ For an explanation of the fields in `dset.h5` (e.g.: `seg`,`area`,`label`), plea
 
 ### Pre-processed Background Images
 The 8,000 background images used in the paper, along with their segmentation and depth masks, have been uploaded here:
-`http://www.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>`, where, `<filename>` can be:
+`http://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>`, where, `<filename>` can be:
 
 |    filenames    | size |                      description                     |             md5 hash             |
 |:--------------- | ----:|:---------------------------------------------------- |:-------------------------------- |
