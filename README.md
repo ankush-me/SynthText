@@ -56,7 +56,10 @@ The 8,000 background images used in the paper, along with their segmentation and
 
 Note: due to large size, `depth.h5` is also available for download as 3-part split-files of 5G each.
 These part files are named: `depth.h5-00, depth.h5-01, depth.h5-02`. Download using the path above, and put them together using `cat depth.h5-0* > depth.h5`.
-
+To download, use the something like the following:
+```
+wget -c http://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>
+```
 [`use_preproc_bg.py`](https://github.com/ankush-me/SynthText/blob/master/use_preproc_bg.py) provides sample code for reading this data.
 
 Note: I do not own the copyright to these images.
