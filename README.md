@@ -72,6 +72,7 @@ Note: I do not own the copyright to these images.
 - @gungui98 has adapted for Vietnamese [here](https://github.com/gungui98/SynthText).
 - @youngkyung has adapted for Korean [here](https://github.com/youngkyung/SynthText_kr).
 - @kotomiDu has developed an interactive UI for generating images with text [here](https://github.com/kotomiDu/GameSynthText).
+- @LaJoKoch has adapted for German [here](https://github.com/LaJoKoch/SynthTextGerman).
 
 ### Further Information
 Please refer to the paper for more information, or contact me (email address in the paper).
