@@ -304,7 +304,7 @@ class RenderFont(object):
         self.max_shrink_trials = 5 # 0.9^5 ~= 0.6
         # the minimum number of characters that should fit in a mask
         # to define the maximum font height.
-        self.min_nchar = 2
+        self.min_nchar = 1
         self.min_font_h = 16 #px : 0.6*12 ~ 7px <= actual minimum height
         self.max_font_h = 120 #px
         self.p_flat = 0.10

@@ -375,7 +375,7 @@ class RendererV3(object):
         self.min_char_height = 8 #px
         self.min_asp_ratio = 0.4 #
 
-        self.max_text_regions = 1
+        self.max_text_regions = 7
 
         self.max_time = max_time
 

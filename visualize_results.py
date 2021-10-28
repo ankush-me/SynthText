@@ -43,16 +43,16 @@ def viz_textbb(text_im, charBB_list, wordBB, alpha=1.0 , image_name=None):
     for i in range(wordBB.shape[-1]):
         bb = wordBB[:,:,i]
         bb = np.c_[bb,bb[:,0]]
-        plt.plot(bb[0,:], bb[1,:], 'g', alpha=alpha)
+        #plt.plot(bb[0,:], bb[1,:], 'g', alpha=alpha)
         # visualize the indiv vertices:
         vcol = ['r','g','b','k']
-        for j in range(4):
-            plt.scatter(bb[0,j],bb[1,j],color=vcol[j])
+        #for j in range(4):
+            #plt.scatter(bb[0,j],bb[1,j],color=vcol[j])
 
     plt.gca().set_xlim([0,W-1])
     plt.gca().set_ylim([H-1,0])
-    plt.show(block=False)
-    plt.savefig('results/{}.png'.format(image_name))
+    #plt.show(block=False)
+    plt.savefig('results/{}.jpg'.format(image_name))
     
 def main(db_fname):
     db = h5py.File(db_fname, 'r')
@@ -63,8 +63,8 @@ def main(db_fname):
         charBB = db['data'][k].attrs['charBB']
         wordBB = db['data'][k].attrs['wordBB']
         txt = db['data'][k].attrs['txt']
-
-        viz_textbb(rgb, [charBB], wordBB, image_name= k[0:k.rfind(".jpg")])
+        j= k.replace(".", "_")
+        viz_textbb(rgb, [charBB], wordBB, image_name=j )
         print ("image name        : ", colorize(Color.RED, k, bold=True))
         print ("  ** no. of chars : ", colorize(Color.YELLOW, charBB.shape[-1]))
         print ("  ** no. of words : ", colorize(Color.YELLOW, wordBB.shape[-1]))
