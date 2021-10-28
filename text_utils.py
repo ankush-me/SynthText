@@ -18,6 +18,8 @@ from pygame import freetype
 #import Image
 from PIL import Image
 import math
+
+import configuration
 from common import *
 import pickle
 import codecs
@@ -315,7 +317,7 @@ class RenderFont(object):
 
         # text-source : gets english text:
         self.text_source = TextSource(min_nchar=self.min_nchar,
-                                      fn=osp.join(data_dir,'newsgroup/newsgroup.txt'),
+                                      fn=osp.join(data_dir, configuration.text_soruce),
                                       lang=lang)
 
         # get font-state object:

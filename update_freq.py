@@ -4,8 +4,10 @@
 from collections import Counter
 import pickle
 
+import configuration
+
 cnt = 0
-filename = './data/newsgroup/newsgroup.txt'
+filename = configuration.text_soruce
 with open(filename) as f:
     c = Counter()
     for x in f:

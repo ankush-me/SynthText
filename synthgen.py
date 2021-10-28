@@ -521,8 +521,6 @@ class RendererV3(object):
         # warp the object mask back onto the image:
         text_mask_orig = text_mask.copy()
         bb_orig = bb.copy()
-        img = Image.fromarray(text_mask)
-        img.save('out.png')
         text_mask = self.warpHomography(text_mask,H,rgb.shape[:2][::-1])
         bb = self.homographyBB(bb,Hinv)
 
