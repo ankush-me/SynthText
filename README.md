@@ -1,5 +1,5 @@
 # SynthText
-Code for generating synthetic text images as described in ["Synthetic Data for Text Localisation in Natural Images", Ankush Gupta, Andrea Vedaldi, Andrew Zisserman, CVPR 2016](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
+Code for generating synthetic text images as described in ["Synthetic Data for Text Localisation in Natural Images", Ankush Gupta, Andrea Vedaldi, Andrew Zisserman, CVPR 2016](https://www.robots.ox.ac.uk/~vgg/data/scenetext/).
 
 
 **Synthetic Scene-Text Image Samples**
@@ -33,7 +33,7 @@ This script will generate random scene-text image samples and store them in an h
 python visualize_results.py
 ```
 ### Pre-generated Dataset
-A dataset with approximately 800000 synthetic scene-text images generated with this code can be found [here](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
+A dataset with approximately 800000 synthetic scene-text images generated with this code can be found [here](https://www.robots.ox.ac.uk/~vgg/data/scenetext/).
 
 ### Adding New Images
 Segmentation and depth-maps are required to use new images as background. Sample scripts for obtaining these are available [here](https://github.com/ankush-me/SynthText/tree/master/prep_scripts).
@@ -75,7 +75,7 @@ Note: due to large size, `depth.h5` is also available for download as 3-part spl
 These part files are named: `depth.h5-00, depth.h5-01, depth.h5-02`. Download using the path above, and put them together using `cat depth.h5-0* > depth.h5`.
 To download, use the something like the following:
 ```
-wget -c http://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>
+wget --continue https://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>
 ```
 [`use_preproc_bg.py`](https://github.com/ankush-me/SynthText/blob/master/use_preproc_bg.py) provides sample code for reading this data.
 
