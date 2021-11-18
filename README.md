@@ -1,5 +1,5 @@
 # SynthText
-Code for generating synthetic text images as described in ["Synthetic Data for Text Localisation in Natural Images", Ankush Gupta, Andrea Vedaldi, Andrew Zisserman, CVPR 2016](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
+Code for generating synthetic text images as described in ["Synthetic Data for Text Localisation in Natural Images", Ankush Gupta, Andrea Vedaldi, Andrew Zisserman, CVPR 2016](https://www.robots.ox.ac.uk/~vgg/data/scenetext/).
 
 
 **Synthetic Scene-Text Image Samples**
@@ -33,7 +33,7 @@ This script will generate random scene-text image samples and store them in an h
 python visualize_results.py
 ```
 ### Pre-generated Dataset
-A dataset with approximately 800000 synthetic scene-text images generated with this code can be found [here](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
+A dataset with approximately 800000 synthetic scene-text images generated with this code can be found [here](https://www.robots.ox.ac.uk/~vgg/data/scenetext/).
 
 ### Adding New Images
 Segmentation and depth-maps are required to use new images as background. Sample scripts for obtaining these are available [here](https://github.com/ankush-me/SynthText/tree/master/prep_scripts).
@@ -44,21 +44,38 @@ Segmentation and depth-maps are required to use new images as background. Sample
 For an explanation of the fields in `dset.h5` (e.g.: `seg`,`area`,`label`), please check this [comment](https://github.com/ankush-me/SynthText/issues/5#issuecomment-274490044).
 
 ### Pre-processed Background Images
-The 8,000 background images used in the paper, along with their segmentation and depth masks, have been uploaded here:
-`http://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>`, where, `<filename>` can be:
 
-|    filenames    | size |                      description                     |             md5 hash             |
-|:--------------- | ----:|:---------------------------------------------------- |:-------------------------------- |
-| `imnames.cp`    | 180K | names of images which do not contain background text |                                  |
-| `bg_img.tar.gz` | 8.9G | images (filter these using `imnames.cp`)             | 3eac26af5f731792c9d95838a23b5047 |
-| `depth.h5`      |  15G | depth maps                                           | af97f6e6c9651af4efb7b1ff12a5dc1b |
-| `seg.h5`        | 6.9G | segmentation maps                                    | 1605f6e629b2524a3902a5ea729e86b2 |
+The 8,000 background images used in the paper, along with their
+segmentation and depth masks, are included in the [same
+torrent](https://academictorrents.com/details/2dba9518166cbd141534cbf381aa3e99a087e83c)
+as the pre-generated dataset under the `bg_data` directory.  The files are:
+
+|    filenames    |                      description                     |
+|:--------------- |:---------------------------------------------------- |
+| `imnames.cp`    | names of images which do not contain background text |
+| `bg_img.tar.gz` | images (filter these using `imnames.cp`)             |
+| `depth.h5`      | depth maps                                           |
+| `seg.h5`        | segmentation maps                                    |
+
+#### Downloading without BitTorrent
+
+Downloading with BitTorrent is strongly recommended.  If that is not
+possible, the files are also available to download over http from
+`https://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>`,
+where, `<filename>` can be:
+
+|    filenames    | size |             md5 hash             |
+|:--------------- | ----:|:-------------------------------- |
+| `imnames.cp`    | 180K |                                  |
+| `bg_img.tar.gz` | 8.9G | 3eac26af5f731792c9d95838a23b5047 |
+| `depth.h5`      |  15G | af97f6e6c9651af4efb7b1ff12a5dc1b |
+| `seg.h5`        | 6.9G | 1605f6e629b2524a3902a5ea729e86b2 |
 
 Note: due to large size, `depth.h5` is also available for download as 3-part split-files of 5G each.
 These part files are named: `depth.h5-00, depth.h5-01, depth.h5-02`. Download using the path above, and put them together using `cat depth.h5-0* > depth.h5`.
 To download, use the something like the following:
 ```
-wget -c http://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>
+wget --continue https://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>
 ```
 [`use_preproc_bg.py`](https://github.com/ankush-me/SynthText/blob/master/use_preproc_bg.py) provides sample code for reading this data.
 
@@ -76,4 +93,3 @@ Note: I do not own the copyright to these images.
 
 ### Further Information
 Please refer to the paper for more information, or contact me (email address in the paper).
-
