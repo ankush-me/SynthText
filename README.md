@@ -46,7 +46,7 @@ For an explanation of the fields in `dset.h5` (e.g.: `seg`,`area`,`label`), plea
 ### Pre-processed Background Images
 
 The 8,000 background images used in the paper, along with their
-segmentation and depth masks, is included in the [same
+segmentation and depth masks, are included in the [same
 torrent](https://academictorrents.com/details/2dba9518166cbd141534cbf381aa3e99a087e83c)
 as the pre-generated dataset under the `bg_data` directory.  The files are:
 
@@ -57,10 +57,10 @@ as the pre-generated dataset under the `bg_data` directory.  The files are:
 | `depth.h5`      | depth maps                                           |
 | `seg.h5`        | segmentation maps                                    |
 
-#### Download without BitTorrent
+#### Downloading without BitTorrent
 
-Download with BitTorrent is strongly recommended.  If that is not
-possible, the files are avalable to download over http from
+Downloading with BitTorrent is strongly recommended.  If that is not
+possible, the files are also available to download over http from
 `https://thor.robots.ox.ac.uk/~vgg/data/scenetext/preproc/<filename>`,
 where, `<filename>` can be:
 
