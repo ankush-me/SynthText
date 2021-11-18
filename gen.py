@@ -40,7 +40,7 @@ def get_data(datadir):
   db_fname = osp.join(datadir, 'sample.h5')
   if not osp.exists(db_fname):
     try:
-      colorprint(Color.BLUE,'\tdownloading data (56 M) from: '+DATA_URL,bold=True)
+      colorprint(Color.BLUE,'\tdownloading data (24 M) from: '+DATA_URL,bold=True)
       print
       sys.stdout.flush()
       out_fname = osp.join(osp.abspath(osp.join(datadir, '..')), 'renderer_data.tar.gz')

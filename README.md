@@ -21,7 +21,7 @@ python gen.py --viz [--datadir <path-to-dowloaded-renderer-data>]
 where, `--datadir` points to the `renderer_data` directory included in the
 [data torrent](https://academictorrents.com/details/2dba9518166cbd141534cbf381aa3e99a087e83c).
 Specifying this `datadir` is optional, and if not specified, the script will
-automatically download and extract the same `renderer.tar.gz` data file (~56M).
+automatically download and extract the same `renderer.tar.gz` data file (~24 M).
 This data file includes:
 
   - **sample.h5**: This is a sample h5 file which contains a set of 5 images along with their depth and segmentation information. Note, this is just given as an example; you are encouraged to add more images (along with their depth and segmentation information) to this database for your own use.
