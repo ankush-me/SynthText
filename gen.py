@@ -40,16 +40,17 @@ def get_data(datadir):
   db_fname = osp.join(datadir, 'sample.h5')
   if not osp.exists(db_fname):
     try:
-      colorprint(Color.BLUE,'\tdownloading data (24 M) from: '+DATA_URL,bold=True)
+      datadir = DATA_PATH
+      colorprint(Color.BLUE,'\tInvalid path or missing data.  Downloading at: `%s`\n'%datadir, bold=True)
+      colorprint(Color.BLUE,'\tdownloading data (24 M) from: ' + DATA_URL, bold=True)
       print
       sys.stdout.flush()
-      out_fname = osp.join(datadir, 'renderer_data.tar.gz')
+      out_fname = 'renderer_data.tar.gz'
       wget.download(DATA_URL, out=out_fname)
       tar = tarfile.open(out_fname)
-      tar.extractall(datadir)
+      tar.extractall()
       tar.close()
       os.remove(out_fname)
-      datadir = osp.join(datadir, 'renderer_data')
       db_fname = osp.join(datadir, 'sample.h5')
       colorprint(Color.BLUE, '\n\tdata saved at:'+db_fname, bold=True)
       sys.stdout.flush()
