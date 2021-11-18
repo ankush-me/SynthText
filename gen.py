@@ -43,12 +43,14 @@ def get_data(datadir):
       colorprint(Color.BLUE,'\tdownloading data (24 M) from: '+DATA_URL,bold=True)
       print
       sys.stdout.flush()
-      out_fname = osp.join(osp.abspath(osp.join(datadir, '..')), 'renderer_data.tar.gz')
+      out_fname = osp.join(datadir, 'renderer_data.tar.gz')
       wget.download(DATA_URL, out=out_fname)
       tar = tarfile.open(out_fname)
-      tar.extractall()
+      tar.extractall(datadir)
       tar.close()
       os.remove(out_fname)
+      datadir = osp.join(datadir, 'renderer_data')
+      db_fname = osp.join(datadir, 'sample.h5')
       colorprint(Color.BLUE, '\n\tdata saved at:'+db_fname, bold=True)
       sys.stdout.flush()
     except:
@@ -56,7 +58,7 @@ def get_data(datadir):
       sys.stdout.flush()
       sys.exit(-1)
   # open the h5 file and return:
-  return h5py.File(db_fname, 'r')
+  return h5py.File(db_fname, 'r'), datadir
 
 
 def add_res_to_db(imgname,res,db):
@@ -76,7 +78,7 @@ def add_res_to_db(imgname,res,db):
 def main(datadir, viz=False):
   # open databases:
   print colorize(Color.BLUE,'getting data..',bold=True)
-  db = get_data(datadir)
+  db, datadir = get_data(datadir)
   print colorize(Color.BLUE,'\t-> done',bold=True)
 
   # open the output h5 file:
