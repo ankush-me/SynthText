@@ -27,36 +27,36 @@ INSTANCE_PER_IMAGE = 1 # no. of times to use the same image
 SECS_PER_IMG = 5 #max time per image in seconds
 
 # path to the data-file, containing image, depth and segmentation:
-DATA_PATH = 'data'
-DB_FNAME = osp.join(DATA_PATH,'dset.h5')
+DATA_PATH = 'renderer_data'
 # url of the data (google-drive public file):
-DATA_URL = 'http://www.robots.ox.ac.uk/~ankush/data.tar.gz'
+DATA_URL = 'http://www.robots.ox.ac.uk/~ankush/renderer_data.tar.gz'
 OUT_FILE = 'results/SynthText.h5'
 
-def get_data():
+def get_data(datadir):
   """
   Download the image,depth and segmentation data:
   Returns, the h5 database.
   """
-  if not osp.exists(DB_FNAME):
+  db_fname = osp.join(datadir, 'sample.h5')
+  if not osp.exists(db_fname):
     try:
       colorprint(Color.BLUE,'\tdownloading data (56 M) from: '+DATA_URL,bold=True)
       print
       sys.stdout.flush()
-      out_fname = 'data.tar.gz'
-      wget.download(DATA_URL,out=out_fname)
+      out_fname = osp.join(osp.abspath(osp.join(datadir, '..')), 'renderer_data.tar.gz')
+      wget.download(DATA_URL, out=out_fname)
       tar = tarfile.open(out_fname)
       tar.extractall()
       tar.close()
       os.remove(out_fname)
-      colorprint(Color.BLUE,'\n\tdata saved at:'+DB_FNAME,bold=True)
+      colorprint(Color.BLUE, '\n\tdata saved at:'+db_fname, bold=True)
       sys.stdout.flush()
     except:
-      print colorize(Color.RED,'Data not found and have problems downloading.',bold=True)
+      print colorize(Color.RED, 'Data not found and have problems downloading.', bold=True)
       sys.stdout.flush()
       sys.exit(-1)
   # open the h5 file and return:
-  return h5py.File(DB_FNAME,'r')
+  return h5py.File(db_fname, 'r')
 
 
 def add_res_to_db(imgname,res,db):
@@ -69,14 +69,14 @@ def add_res_to_db(imgname,res,db):
     dname = "%s_%d"%(imgname, i)
     db['data'].create_dataset(dname,data=res[i]['img'])
     db['data'][dname].attrs['charBB'] = res[i]['charBB']
-    db['data'][dname].attrs['wordBB'] = res[i]['wordBB']        
+    db['data'][dname].attrs['wordBB'] = res[i]['wordBB']
     db['data'][dname].attrs['txt'] = res[i]['txt']
 
 
-def main(viz=False):
+def main(datadir, viz=False):
   # open databases:
   print colorize(Color.BLUE,'getting data..',bold=True)
-  db = get_data()
+  db = get_data(datadir)
   print colorize(Color.BLUE,'\t-> done',bold=True)
 
   # open the output h5 file:
@@ -92,7 +92,7 @@ def main(viz=False):
     NUM_IMG = N
   start_idx,end_idx = 0,min(NUM_IMG, N)
 
-  RV3 = RendererV3(DATA_PATH,max_time=SECS_PER_IMG)
+  RV3 = RendererV3(datadir, max_time=SECS_PER_IMG)
   for i in xrange(start_idx,end_idx):
     imname = imnames[i]
     try:
@@ -135,6 +135,7 @@ def main(viz=False):
 if __name__=='__main__':
   import argparse
   parser = argparse.ArgumentParser(description='Genereate Synthetic Scene-Text Images')
-  parser.add_argument('--viz',action='store_true',dest='viz',default=False,help='flag for turning on visualizations')
+  parser.add_argument('--viz', action='store_true', dest='viz', default=False, help='flag for turning on visualizations')
+  parser.add_argument('--datadir', type=str, default=DATA_PATH, help='path to directory containing the downloaded renderer-data')
   args = parser.parse_args()
-  main(args.viz)
+  main(args.datadir, args.viz)
