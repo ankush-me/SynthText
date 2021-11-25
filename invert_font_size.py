@@ -4,6 +4,8 @@
 
 import pygame
 from pygame import freetype
+
+import configuration
 from text_utils import FontState
 import numpy as np 
 import matplotlib.pyplot as plt 
@@ -33,7 +35,7 @@ for i in range(len(FS.fonts)):
 	print("{}:\t{}".format(i, font.name))
 	xs.append(h)
 
-with open('font_px2pt.cp','wb') as f:
+with open("data/{}".format(configuration.font_px2pt), 'wb') as f:
 	cp.dump(models,f)
 #plt.plot(xs,ys[i])
 #plt.show()

@@ -1,11 +1,13 @@
 from __future__ import division
+
+import cv2
 import numpy as np 
 from ransac import fit_plane_ransac
 from sys import modules
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 #import mayavi.mlab as mym
-
+import simpy as sim
 
 class LUT_RGB(object):
     """

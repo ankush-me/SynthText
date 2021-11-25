@@ -2,6 +2,11 @@
 Code for generating synthetic text images as described in ["Synthetic Data for Text Localisation in Natural Images", Ankush Gupta, Andrea Vedaldi, Andrew Zisserman, CVPR 2016](http://www.robots.ox.ac.uk/~vgg/data/scenetext/).
 
 
+#download data folder from drive
+# run gen.py
+#parameter --lang 
+
+
 **Synthetic Scene-Text Image Samples**
 ![Synthetic Scene-Text Samples](samples.png "Synthetic Samples")
 

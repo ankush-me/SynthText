@@ -78,8 +78,8 @@ def process_db_parallel(base_dir, th=0.11):
             return self
 
         def get_imname(self,i):
-            return "".join(map(chr, self.ucm_h5[self.ucm_h5['names'][0,self.i]][:]))
-
+            return str("".join(map(chr, self.ucm_h5[self.ucm_h5['names'][0,self.i]][:].flatten())))
+          
         def __stop__(self):
             print ("DONE")
             self.ucm_h5.close()
@@ -99,7 +99,7 @@ def process_db_parallel(base_dir, th=0.11):
 
             return imname
 
-        def next(self):
+        def __next__(self):
             imname = self.get_valid_name()
             print ("%d of %d"%(self.i+1,self.N))
             ucm = self.ucm_h5[self.ucm_h5['ucms'][0,self.i]][:]
@@ -116,6 +116,7 @@ def process_db_parallel(base_dir, th=0.11):
         if res is None:
             continue
         ((mask,area,label),imname) = res
+        
         print ("got back : ", imname)
         mask = mask.astype('uint16')
         mask_dset = dbo_mask.create_dataset(imname, data=mask)
@@ -128,5 +129,11 @@ def process_db_parallel(base_dir, th=0.11):
     print( ">>>> DONE")
 
 
-base_dir = '/home/' # directory containing the ucm.mat, i.e., output of run_ucm.m
+
+import argparse
+
+parser = argparse.ArgumentParser(description='generate segmentation map')
+parser.add_argument('--base_dir', default='h5py_files')
+args = parser.parse_args()
+base_dir = args.base_dir # directory containing the ucm.mat, i.e., output of run_ucm.m
 process_db_parallel(base_dir)

@@ -17,6 +17,8 @@ import h5py
 import os, sys, traceback
 import os.path as osp
 
+import configuration
+import visualize_results
 from logger import wrap, entering, exiting
 from synthgen import *
 from common import *
@@ -24,15 +26,15 @@ import wget, tarfile
 
 ## Define some configuration variables:
 NUM_IMG = -1 # no. of images to use for generation (-1 to use all available):
-INSTANCE_PER_IMAGE = 5 # no. of times to use the same image
-SECS_PER_IMG = 500000 #max time per image in seconds
+INSTANCE_PER_IMAGE = 10 # no. of times to use the same image
+SECS_PER_IMG = 5
 
 # path to the data-file, containing image, depth and segmentation:
 DATA_PATH = 'data'
 DB_FNAME = osp.join(DATA_PATH,'dset.h5')
 # url of the data (google-drive public file):
 DATA_URL = 'http://www.robots.ox.ac.uk/~ankush/data.tar.gz'
-OUT_FILE = 'results/SynthText.h5'
+OUT_FILE = 'results/SynthText_{}.h5'.format(configuration.lang)
 OUT_DIR = 'results'
 
 def get_data():
@@ -71,7 +73,7 @@ def add_res_to_db(imgname,res,db):
     dname = "%s_%d"%(imgname, i)
     db['data'].create_dataset(dname,data=res[i]['img'])
     db['data'][dname].attrs['charBB'] = res[i]['charBB']
-    db['data'][dname].attrs['wordBB'] = res[i]['wordBB']        
+    db['data'][dname].attrs['wordBB'] = res[i]['wordBB']
 
     text_utf8 = [char.encode('utf8') for char in res[i]['txt']]
     db['data'][dname].attrs['txt'] = text_utf8
@@ -108,8 +110,8 @@ def main(viz=False):
   if NUM_IMG < 0:
     NUM_IMG = N
   start_idx,end_idx = 0,min(NUM_IMG, N)
-
-  RV3 = RendererV3(DATA_PATH,max_time=SECS_PER_IMG,lang=args.lang)
+  
+  RV3 = RendererV3(DATA_PATH,max_time=SECS_PER_IMG)   #TODO change max_time
   for i in range(start_idx,end_idx):
     imname = imnames[i]
     try:
@@ -158,5 +160,17 @@ if __name__=='__main__':
                         help='flag for turning on visualizations')
   parser.add_argument('--lang', default='ENG',
                         help='Select language : ENG/HI')
+  
+  parser.add_argument('--text_source', default ='newsgroup/newsgroup.txt', help="text_source")
   args = parser.parse_args()
+
+  configuration.lang=args.lang
+  configuration.text_soruce = "newsgroup/newsgroup_{}.txt".format(args.lang)
+  configuration.fontlist_file = "fonts/fontlist/fontlist_{}.txt".format(args.lang)
+  configuration.char_freq_path = 'models/{}/char_freq.cp'.format(args.lang)
+  configuration.font_px2pt = 'models/{}/font_px2pt.cp'.format(args.lang )
+  OUT_FILE = 'results/SynthText_{}.h5'.format(configuration.lang)
+  
   main(args.viz)
+  #TODO remove this line. kept only for debuggging during development.
+  #visualize_results.main('results/SynthText_{}.h5'.format(configuration.lang))

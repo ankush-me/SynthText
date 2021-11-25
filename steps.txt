@@ -1,0 +1,7 @@
+matconvenet 1.0.beta9
+vlfeat 0.9.21
+compile matconvenet https://www.vlfeat.org/matconvnet/install/
+
+vl_compilenn('enableGpu', true,'cudaRoot', '/usr/local/cuda-11.1')
+
+https://github.com/vlfeat/matconvnet/issues/1025

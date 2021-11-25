@@ -42,17 +42,24 @@ class Layer(object):
             print (color.shape)
             raise Exception("color datatype not understood")
 
+
+def rgb_color_diff_in_gray(col1, col2):
+    gray1 = col1[0]*0.299 + col1[1]*0.587 + col1[2]*0.114
+    gray2 = col2[0]*0.299 + col2[1]*0.587 + col2[2]*0.114
+    return abs(gray1 - gray2)
+
 class FontColor(object):
 
     def __init__(self, col_file):
-        with open(col_file,'rb') as f:
+        self.gray_diff_threshold = 25  # add threshold
+        with open(col_file, 'rb') as f:
             self.colorsRGB = cp.load(f, encoding='unicode_escape')
         self.ncol = self.colorsRGB.shape[0]
 
         # convert color-means from RGB to LAB for better nearest neighbour
         # computations:
-        self.colorsLAB = np.r_[self.colorsRGB[:,0:3], self.colorsRGB[:,6:9]].astype('uint8')
-        self.colorsLAB = np.squeeze(cv.cvtColor(self.colorsLAB[None,:,:],cv.COLOR_RGB2Lab))
+        self.colorsLAB = np.r_[self.colorsRGB[:, 0:3], self.colorsRGB[:, 6:9]].astype('uint8')
+        self.colorsLAB = np.squeeze(cv.cvtColor(self.colorsLAB[None, :, :], cv.COLOR_RGB2Lab))
 
 
     def sample_normal(self, col_mean, col_std):
@@ -66,30 +73,43 @@ class FontColor(object):
     def sample_from_data(self, bg_mat):
         """
         bg_mat : this is a nxmx3 RGB image.
-        
+
         returns a tuple : (RGB_foreground, RGB_background)
         each of these is a 3-vector.
         """
         bg_orig = bg_mat.copy()
         bg_mat = cv.cvtColor(bg_mat, cv.COLOR_RGB2Lab)
-        bg_mat = np.reshape(bg_mat, (np.prod(bg_mat.shape[:2]),3))
-        bg_mean = np.mean(bg_mat,axis=0)
-
-        norms = np.linalg.norm(self.colorsLAB-bg_mean[None,:], axis=1)
+        bg_mat = np.reshape(bg_mat, (np.prod(bg_mat.shape[:2]), 3))
+        bg_mean = np.mean(bg_mat, axis=0)
+        norms = np.linalg.norm(self.colorsLAB - bg_mean[None, :], axis=1)
         # choose a random color amongst the top 3 closest matches:
-        #nn = np.random.choice(np.argsort(norms)[:3]) 
+        # nn = np.random.choice(np.argsort(norms)[:3])
         nn = np.argmin(norms)
-
+    
         ## nearest neighbour color:
-        data_col = self.colorsRGB[np.mod(nn,self.ncol),:]
-
-        col1 = self.sample_normal(data_col[:3],data_col[3:6])
-        col2 = self.sample_normal(data_col[6:9],data_col[9:12])
-
+        data_col = self.colorsRGB[np.mod(nn, self.ncol), :]
+        col1 = self.sample_normal(data_col[:3], data_col[3:6])
+        col2 = self.sample_normal(data_col[6:9], data_col[9:12])
+    
+        ## fix as follows
+        true_bg_col = np.mean(np.mean(bg_orig, axis=0), axis=0)
         if nn < self.ncol:
+            fg_col = col2
+            diff = rgb_color_diff_in_gray(fg_col, true_bg_col)
+            while diff < self.gray_diff_threshold:
+                # print 'change color'
+                fg_col = np.random.choice(256, 3).astype('uint8')
+                diff = rgb_color_diff_in_gray(fg_col, true_bg_col)
+            col2 = fg_col
             return (col2, col1)
         else:
             # need to swap to make the second color close to the input backgroun color
+            fg_col = col1
+            diff = rgb_color_diff_in_gray(fg_col, true_bg_col)
+            while diff < self.gray_diff_threshold:
+                fg_col = np.random.choice(256, 3).astype('uint8')
+                diff = rgb_color_diff_in_gray(fg_col, true_bg_col)
+            col1 = fg_col
             return (col1, col2)
 
     def mean_color(self, arr):
@@ -148,10 +168,10 @@ class Colorize(object):
         # probabilities of different text-effects:
         self.p_bevel = 0.05 # add bevel effect to text
         self.p_outline = 0.05 # just keep the outline of the text
-        self.p_drop_shadow = 0.15
+        self.p_drop_shadow = 0.05
         self.p_border = 0.15
         self.p_displacement = 0.30 # add background-based bump-mapping
-        self.p_texture = 0.0 # use an image for coloring text
+        self.p_texture = 1.0 # use an image for coloring text
 
 
     def drop_shadow(self, alpha, theta, shift, size, op=0.80):
@@ -361,7 +381,7 @@ class Colorize(object):
         l_normal = self.merge_down(layers,blends)
         # now do poisson image editing:
         l_bg = Layer(alpha=255*np.ones_like(text_arr,'uint8'), color=bg_arr)
-        l_out =  blit_images(l_normal.color,l_bg.color.copy())
+        l_out = blit_images(l_normal.color,l_bg.color.copy(), mode="max" )
         
         # plt.subplot(1,3,1)
         # plt.imshow(l_normal.color)

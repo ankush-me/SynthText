@@ -7,7 +7,7 @@ import pickle
 import configuration
 
 cnt = 0
-filename = configuration.text_soruce
+filename = 'data/'+configuration.text_soruce
 with open(filename) as f:
     c = Counter()
     for x in f:
@@ -22,5 +22,5 @@ for key in c:
 
 d = dict(c)
 # print d
-with open("char_freq.cp", 'wb') as f:
+with open("data/{}".format(configuration.char_freq_path), 'wb') as f:
     pickle.dump(d, f)

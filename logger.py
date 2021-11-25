@@ -29,7 +29,7 @@ def wrap(pre, post):
 	return decorate
 
 def entering(func):
-    #print("Entered {}".format(func.__name__))
+   # print("Entered {}".format(func.__name__))
     logger.debug("Entered %s", func.__name__)
 
 def exiting(func):

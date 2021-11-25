@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import h5py
 from PIL import Image
 
+import configuration
 from common import *
 import cv2
 
@@ -43,11 +44,11 @@ def viz_textbb(text_im, charBB_list, wordBB, alpha=1.0 , image_name=None):
     for i in range(wordBB.shape[-1]):
         bb = wordBB[:,:,i]
         bb = np.c_[bb,bb[:,0]]
-        #plt.plot(bb[0,:], bb[1,:], 'g', alpha=alpha)
-        # visualize the indiv vertices:
+        plt.plot(bb[0,:], bb[1,:], 'g', alpha=alpha)
+        #visualize the indiv vertices:
         vcol = ['r','g','b','k']
         #for j in range(4):
-            #plt.scatter(bb[0,j],bb[1,j],color=vcol[j])
+        #    plt.scatter(bb[0,j],bb[1,j],color=vcol[j])
 
     plt.gca().set_xlim([0,W-1])
     plt.gca().set_ylim([H-1,0])
@@ -69,11 +70,10 @@ def main(db_fname):
         print ("  ** no. of chars : ", colorize(Color.YELLOW, charBB.shape[-1]))
         print ("  ** no. of words : ", colorize(Color.YELLOW, wordBB.shape[-1]))
         print ("  ** text         : ", colorize(Color.GREEN, txt))
-
         #if 'q' in input("next? ('q' to exit) : "):
         #    break
     db.close()
 
 if __name__=='__main__':
-    main('results/SynthText.h5')
+    main('results/SynthText_{}.h5'.format(configuration.lang))
 

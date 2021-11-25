@@ -150,7 +150,7 @@ def get_rect(glyphs, qah_face, text_size, angle=0):
     return b.bounds
 
 
-def boundB(imm):
+def boundB( imm):
     (sx, sy) = imm.shape
     
     first = 0  ## intialize everything.
@@ -184,8 +184,18 @@ def boundB(imm):
             bottom = i - 1
             break
     
-    return (leftx, top, rightx - leftx + 1, bottom - top + 1)
 
+    
+    mask = imm.swapaxes(0, 1) != 0
+    xs, ys = np.where(mask)
+    coords = np.c_[xs, ys].astype('float32')
+    
+    rect = cv2.minAreaRect(coords)
+    box = np.array(cv2.boxPoints(rect))
+    box = np.int0(box)
+    
+
+    return (leftx, top, rightx - leftx + 1, bottom - top + 1 , box)
 
 # In[639]:
 
@@ -242,7 +252,7 @@ def move_bb(bbs, t):
     """
     return bbs + t[:,None,None]
 @wrap(entering, exiting)
-def crop_safe(arr, rect, bbs=[], pad=0):
+def crop_safe(arr, rect, box=None, pad=0):
     """
     ARR : arr to crop
     RECT: (x,y,w,h) : area to crop to
@@ -258,14 +268,15 @@ def crop_safe(arr, rect, bbs=[], pad=0):
     v0 = [max(0,rect[0]), max(0,rect[1])]
     v1 = [min(arr.shape[0], rect[0]+rect[2]), min(arr.shape[1], rect[1]+rect[3])]
     arr = arr[v0[0]:v1[0],v0[1]:v1[1],...]
-    if len(bbs) > 0:
-        for i in range(len(bbs)):
-            bbs[i,0] -= v0[0]
-            bbs[i,1] -= v0[1]
-        return arr, bbs
+
+    if len(box) > 0:
+        for i in np.ndindex(box.shape[0]):
+            box[i, 0] -= v0[0]
+            box[i, 1] -= v0[1]
+            
+        return arr, box
     else:
         return arr
-
 
 class BaselineState(object):
     curve = lambda this, a: lambda x: a*x*x
@@ -294,20 +305,20 @@ class RenderFont(object):
         Also, outputs ground-truth bounding boxes and text string
     """
 
-    def __init__(self, data_dir='data', lang="ENG"):
+    def __init__(self, data_dir='data'):
         # distribution over the type of text:
         # whether to get a single word, paragraph or a line:
-        self.p_text = {1.0 : 'WORD',
-                       0.0 : 'LINE',
-                       0.0 : 'PARA'}
+        self.p_text = {0.5 : 'WORD',
+                       0.2 : 'LINE',
+                       0.3 : 'PARA'}
 
         ## TEXT PLACEMENT PARAMETERS:
         self.f_shrink = 0.90
         self.max_shrink_trials = 5 # 0.9^5 ~= 0.6
         # the minimum number of characters that should fit in a mask
         # to define the maximum font height.
-        self.min_nchar = 1
-        self.min_font_h = 16 #px : 0.6*12 ~ 7px <= actual minimum height
+        self.min_nchar = 2
+        self.min_font_h = 24 #px : 0.6*12 ~ 7px <= actual minimum height
         self.max_font_h = 120 #px
         self.p_flat = 0.10
 
@@ -318,7 +329,7 @@ class RenderFont(object):
         # text-source : gets english text:
         self.text_source = TextSource(min_nchar=self.min_nchar,
                                       fn=osp.join(data_dir, configuration.text_soruce),
-                                      lang=lang)
+                                    lang = configuration.lang)
 
         # get font-state object:
         self.font_state = FontState(data_dir)
@@ -328,21 +339,21 @@ class RenderFont(object):
     @wrap(entering, exiting)
     def render_multiline(self, font, text):
         """
-        renders multiline TEXT on the pygame surface SURF with the
-        font style FONT.
-        A new line in text is denoted by \n, no other characters are
-        escaped. Other forms of white-spaces should be converted to space.
-        returns the updated surface, words and the character bounding boxes.
-        """
+		renders multiline TEXT on the pygame surface SURF with the
+		font style FONT.
+		A new line in text is denoted by \n, no other characters are
+		escaped. Other forms of white-spaces should be converted to space.
+		returns the updated surface, words and the character bounding boxes.
+		"""
         # Adding Custom Code here by removing the Orginal Code
-
+    
         # get the number of lines
         lines = text.split('\n')
         lengths = [len(l) for l in lines]
-
+    
         # font parameters:
         line_spacing = font.get_sized_height() + 1
-
+    
         # initialize the surface to proper size:
         line_bounds = font.get_rect(lines[np.argmax(lengths)])
         fsize = (round(2.0 * line_bounds.width), round(1.25 * line_spacing * len(lines)))
@@ -356,12 +367,12 @@ class RenderFont(object):
         # lines = di['lines']
         fsize = Vector(int(surfx + space.width), int(surfy + line_spacing))
         # line_spacing = di['line_spacing']
-
+    
         pix = qah.ImageSurface.create(
             format=CAIRO.FORMAT_RGB24,
             dimensions=fsize
         )
-
+    
         # Creating ft_face
         ft_face = ft.new_face(font_path)
         text_size = font_size
@@ -372,74 +383,67 @@ class RenderFont(object):
         # ft_face.underline = font.underline
         hb_font = hb.Font.ft_create(ft_face)
         qah_face = qah.FontFace.create_for_ft_face(ft_face)
-
+    
         ctx = qah.Context.create(pix)
         # ctx.set_source_colour(Colour.grey(0))
         # ctx.paint()
         ctx.set_source_colour(Colour.grey(1))
         ctx.set_font_face(qah_face)
         ctx.set_font_size(text_size)
-
+    
         # Start Replacing Code from here
-
+    
         ## for the purpose of shifting in horizontal direction.
         shiftAdditional = 0
         # By What factor shifting should be done
         shiftFactor = 1.1
-
+    
         factor = 0
         y = 0
         bb = []
-
+    
         ## The recent addtion code. feb 19,2019
         ## Project make faster.
         ## No need for the word wise bounding box. So, now they can be eliminated.
-
-        '''
-            The procedure is as follow.
-            - Since we do not require individual character bounding box,
-            we will discard that functionality.
-            - We will place a word and create fake bounding box for it.
-            - right from the top left.
-            - width of the bounding box will be simply ((width of word)/total bounding box)
-        '''
-
-        ## Ends here feb 19,2019
-
-        for l in lines:  # picking up a line.
     
-            l = l.split()
+        '''
+			The procedure is as follow.
+			- Since we do not require individual character bounding box,
+			we will discard that functionality.
+			- We will place a word and create fake bounding box for it.
+			- right from the top left.
+			- width of the bounding box will be simply ((width of word)/total bounding box)
+		'''
+    
+        ## Ends here feb 19,2019
+    
+        for l in lines:  # picking up a line.
+        
+            l = l.split(" ")
             l = " ".join(l)
             x = spaceWidth * 0.7  # carriage-return
             y += (line_spacing * 0.8)  # line-feed
-    
+        
             words = l.split()
-    
+        
             for w in words:
                 st_bound, glyph_3 = get_Bound_Glyph(w, buf, hb_font, ft_face, text_size)
                 shift = shiftFactor * (st_bound.topleft)[0] + shiftAdditional
-        
-                ## since now we have required information for rendering.
-                ## We know bounding box, we know glyphs, time to plot.
+
                 char_in_w = len(w)
-        
-                avg_bounding_width = st_bound.width / char_in_w
-        
-                ## for each character we have to place a fake bounding box
-                width_shift = 0
-                for i in range(char_in_w):
-                    ## bounding box consist of top-left point + width and height.
-                    bb.append(np.array(
-                        [x + shift + width_shift, y + (st_bound.topleft)[1], avg_bounding_width, st_bound.height]))
-                    width_shift = width_shift + avg_bounding_width
-        
+                
+                bb.append(np.array([x+shift ,y + (st_bound.topleft)[1], st_bound.width, st_bound.height]))
+
+    
+            
                 ## now since we have generated fake bounding box,
                 ## next task will be to render glyphs on the actual surface.
-        
+            
                 ## Remember context is a pen for us.
                 ## Go to the point from where you want to write.
+                #bb.append(np.array([x+shift,y + (st_bound.topleft)[1], st_bound.width,st_bound.height])  )
                 ctx.translate(Vector(x + shift, y))
-        
+            
                 # setting the color that we wish to use.
                 ctx.set_source_colour(Colour.grey(1))
                 # setting the font_face
@@ -448,10 +452,10 @@ class RenderFont(object):
                 ctx.set_font_size(text_size)
                 # rendering the glyphs on the surface.
                 ctx.show_glyphs(glyph_3)
-        
+            
                 ## translate back to the original position.
                 ctx.translate(Vector(-(x + shift), -y))
-        
+            
                 ## Shift the x to new position.
                 x = x + st_bound.width + shift + spaceWidth
                 ## resetting the shift.
@@ -459,31 +463,40 @@ class RenderFont(object):
 
         img = pngB_to_np(pix.to_png_bytes())
 
-
-        Simg = img[:, :, 1]
-
-        bb = np.array(bb)
-
-        Simg = Simg.swapaxes(0, 1)
-
-        words = ' '.join(text.split())
-
+        # dicc= {}
+        # dicc['img'] = img[:,:,1]
+        # dicc['bb'] = bb
     
+        Simg = img[:, :, 1]
+    
+        # self.ii = self.ii+1
+        # bb = dicc['bb']
+        bb = np.array(bb)
+        # Simg = Simg.astype(np.uint8)
+        # Simg = Simg[:,:,1]
+        Simg = Simg.swapaxes(0, 1)
+    
+        # get the words:
+        words = ' '.join(text.split())
 
         r0 = pygame.Rect(bb[0])
         rect_union = r0.unionall(bb)
-
+    
         surf_arr, bbs = crop_safe(Simg, rect_union, bb, pad=5)
         surf_arr = surf_arr.swapaxes(0, 1)
         # self.visualize_bb(surf_arr,bbs)
-        return surf_arr, words, bbs
 
+        bbs = self.bb_xywh2coords(bbs)
+        return surf_arr, words, bbs
     
     @wrap(entering, exiting)
     def render_curved(self, font, word_text):
         """
                use curved baseline for rendering word
                """
+
+        word_text = word_text.replace('\u200c', ' ')
+        word_text = word_text.replace('\u201c', ' ')
         wl = len(word_text)
         isword = len(word_text.split()) == 1
     
@@ -523,14 +536,12 @@ class RenderFont(object):
         ctx.set_source_colour(Colour.grey(0))
         ctx.paint()
     
-        bbs = []
-    
         word_text = word_text.strip()
         word_text_len = len(word_text)
         ### Added on feb, 22, 2019
     
         ## single word will be there.
-        shiftFactor = 1.0
+        shiftFactor = 1.1
         shiftAdditional = 0
         ## Please refer to multiline for explaination.
         st_bound, glyph_3 = get_Bound_Glyph(word_text, buf, hb_font, ft_face, text_size)
@@ -552,30 +563,29 @@ class RenderFont(object):
         curveIntensity = np.random.randint(-20, 20)
     
         img = transform_desire(img, curveIntensity)
-    
-        left, top, width, height = boundB(img[:, :, 1])
-        #avg_w = width / word_text_len
-    
-        #extd = 0
-        #for i in range(1):
-        #   bbs.append(np.array([left + extd, top, width, height]))
-          #  extd = extd + avg_w
+        
+        #bbox gives minimum area rectangle compared to left, top , width and height variable.
+        left, top, width, height ,bbox = boundB(img[:, :, 1])
+        bbs =[]
         
         bbs.append(np.array([left, top, left+width , height ]))
-      
-        Simg1 = img[:, :, 0]
+        
+        
         bb = bbs
         bb = np.array(bb)
+        Simg1 = img[:, :, 0]
         Simg1 = Simg1.swapaxes(0, 1)
-       
-    
+        
         r0 = pygame.Rect(bb[0])
         rect_union = r0.unionall(bb)
-        surf_arr, bbs = crop_safe(Simg1, rect_union, bb, pad=5)
-    
+        surf_arr, bbox,  = crop_safe(Simg1, rect_union, bbox, pad=5)
+
         surf_arr = surf_arr.swapaxes(0, 1)
-      
-        return surf_arr, word_text, bbs
+
+        bbox = bbox.T
+        bbox = bbox[:, :, None]
+        
+        return surf_arr, word_text, bbox
     
     @wrap(entering, exiting)
     def get_nline_nchar(self,mask_size,font_height,font_width):
@@ -583,6 +593,7 @@ class RenderFont(object):
         Returns the maximum number of lines and characters which can fit
         in the MASK_SIZED image.
         """
+        
         H,W = mask_size
         nline = int(np.ceil(H/(2*font_height)))
         nchar = int(np.floor(W/font_width))
@@ -703,17 +714,17 @@ class RenderFont(object):
             #print colorize(Color.GREEN, text)
 
             # render the text:
-            txt_arr,txt,bb = self.render_curved(font, text)
-           
-            bb = self.bb_xywh2coords(bb)
+            txt_arr,txt, box = self.render_curved(font, text)
 
+           
+            
             # make sure that the text-array is not bigger than mask array:
             if np.any(np.r_[txt_arr.shape[:2]] > np.r_[mask.shape[:2]]):
                 #warn("text-array is bigger than mask")
                 continue
 
             # position the text within the mask:
-            text_mask,loc,bb, _ = self.place_text([txt_arr], mask, [bb])
+            text_mask,loc,bb, _ = self.place_text([txt_arr], mask, [box])
             if len(loc) > 0:#successful in placing the text collision-free:
                 return text_mask,loc[0],bb[0],text
         return #None
@@ -749,9 +760,11 @@ class FontState(object):
     @wrap(entering, exiting)
     def __init__(self, data_dir='data'):
 
-        char_freq_path = osp.join(data_dir, 'models/char_freq.cp')        
-        font_model_path = osp.join(data_dir, 'models/font_px2pt.cp')
+        char_freq_path = osp.join(data_dir, configuration.char_freq_path)
+        font_model_path = osp.join(data_dir, configuration.font_px2pt)
 
+
+        
         # get character-frequencies in the English language:
         with open(char_freq_path,'rb') as f:
             self.char_freq = cp.load(f)
@@ -761,7 +774,7 @@ class FontState(object):
             self.font_model = cp.load(f, encoding='unicode_escape')
             
         # get the names of fonts to use:
-        self.FONT_LIST = osp.join(data_dir, 'fonts/fontlist.txt')
+        self.FONT_LIST = osp.join(data_dir, configuration.fontlist_file)
         self.fonts = [os.path.join(data_dir,'fonts',f.strip()) for f in open(self.FONT_LIST)]
 
     @wrap(entering, exiting)
@@ -832,7 +845,7 @@ class FontState(object):
         font.strong = fs['strong']
         font.oblique = fs['oblique']
         font.strength = fs['strength']
-        char_spacing = fs['char_spacing']
+        #font.char_spacing = fs['char_spacing']
         font.antialiased = True
         font.origin = True
         return font
@@ -841,25 +854,7 @@ class FontState(object):
 class TextSource(object):
     """
     Provides text for words, paragraphs, sentences.
-    
-
-     __ranges = [
-        {"from": ord(u"\u3300"), "to": ord(u"\u33ff")},  # compatibility ideographs
-        {"from": ord(u"\ufe30"), "to": ord(u"\ufe4f")},  # compatibility ideographs
-        {"from": ord(u"\uf900"), "to": ord(u"\ufaff")},  # compatibility ideographs
-        {"from": ord(u"\U0002F800"), "to": ord(u"\U0002fa1f")},  # compatibility ideographs
-        {"from": ord(u"\u30a0"), "to": ord(u"\u30ff")},  # Japanese Kana
-        {"from": ord(u"\u2e80"), "to": ord(u"\u2eff")},  # cjk radicals supplement
-        {"from": ord(u"\u4e00"), "to": ord(u"\u9fff")},
-        {"from": ord(u"\u3400"), "to": ord(u"\u4dbf")},
-        {"from": ord(u"\U00020000"), "to": ord(u"\U0002a6df")},
-        {"from": ord(u"\U0002a700"), "to": ord(u"\U0002b73f")},
-        {"from": ord(u"\U0002b740"), "to": ord(u"\U0002b81f")},
-        {"from": ord(u"\U0002b820"), "to": ord(u"\U0002ceaf")}  # included as of Unicode 8.0
-    ]"""
-    __ranges = [
-        {"from" :'ऀ' , "to" : "९"}
-    ]
+    """
 
     @wrap(entering, exiting)
     def __init__(self, min_nchar, fn, lang="ENG"):
@@ -871,49 +866,15 @@ class TextSource(object):
                       'LINE':self.sample_line,
                       'PARA':self.sample_para}
         self.lang = lang
-        # parse English text
-        if self.lang == "ENG":
-            corpus = PlaintextCorpusReader("./",
-                                         fn)
-        
-            self.words = corpus.words()
-            self.txt = corpus.sents()
-            self.paras = corpus.paras()
-
-        #TODO refactor this code . remove repeated code for all languages.
-        if self.lang == "HI":
-            corpus = IndianCorpusReader("./", fn)
-            self.words = corpus.words()
-            self.txt = corpus.sents()
-            #self.paras = corpus.paras()
-        # parse Japanese text
-        elif self.lang == "JPN":
-
-            # convert fs into chasen file
-            _, ext = os.path.splitext(os.path.basename(fn))
-            fn_chasen = fn.replace(ext, ".chasen")
-            print ("Convert {} into {}".format(fn, fn_chasen))
-
-            cmd = "mecab -Ochasen {} > {}".format(fn, fn_chasen)
-            print ("The following cmd below was executed to convert into chasen (for Japanese)")
-            print ("\t{}".format(cmd))
-            p = subprocess.call(cmd, shell=True)
-            data = ChasenCorpusReader('./', fn_chasen, encoding='utf-8')
-
-            self.words = data.words()
-            self.txt = data.sents()
-            self.paras = data.paras()
-
-            # jp_sent_tokenizer = nltk.RegexpTokenizer(u'[^　「」！？。]*[！？。]')
-            # jp_chartype_tokenizer = nltk.RegexpTokenizer(u'([ぁ-んー]+|[ァ-ンー]+|[\u4e00-\u9FFF]+|[^ぁ-んァ-ンー\u4e00-\u9FFF]+)')
-            #
-            # corpus = PlaintextCorpusReader("./",
-            #                              fn,
-            #                              encoding='utf-8',
-            #                              para_block_reader=read_line_block,
-            #                              sent_tokenizer=jp_sent_tokenizer,
-            #                              word_tokenizer=jp_chartype_tokenizer)
-
+        self.characters_range=configuration.range[self.lang]
+        self.words=[]
+        with open(fn, 'r') as f:
+            self.txt = [l.strip() for l in f.readlines()]
+            for l in self.txt:
+                words = l.split()
+                for word in words:
+                    self.words.append(word)
+            
         # distribution over line/words for LINE/PARA:
         self.p_line_nline = np.array([0.85, 0.10, 0.05])
         self.p_line_nword = [4,3,12]  # normal: (mu, std)
@@ -923,29 +884,32 @@ class TextSource(object):
         # probability to center-align a paragraph:
         self.center_para = 0.5
 
-    def is_cjk(self, char):
-        p = any([range["from"] <= char <= range["to"] for range in self.__ranges])
+    def is_valid_character(self, char):
+        p = any([range["from"] <= char <= range["to"] for range in self.characters_range])
         return p
+    
     @wrap(entering, exiting)
-    def check_symb_frac(self, txt, f=0.35):
+    def check_symb_frac(self, txt, f=0.2):  # f =0 means no special chracter
         """
         T/F return : T iff fraction of symbol/special-charcters in
                      txt is less than or equal to f (default=0.25).
         """
         if self.lang == "ENG":
             return np.sum([not ch.isalnum() for ch in txt])/(len(txt)+0.0) <= f
-    
-        #TODO refactor this code.
-        elif self.lang == "JPN" or self.lang=="HI":
+        else:
             chcnt = 0
             line = txt  # .decode('utf-8')
             for ch in line:
-                if ch.isalnum() or self.is_cjk(ch):
+                if ch in configuration.special_char:
                     chcnt += 1
+            return float(chcnt) / (len(txt) + 0.0) <= f
 
-            return float(chcnt) / (len(txt) + 0.0) > f
-        # return np.sum([not ch.isalnum() for ch in txt])/(len(txt)+0.0) <= f
-
+    def check_valid_word(self, w):
+        for ch in w:
+            if not (self.is_valid_character(ch) or ch in configuration.special_char):
+                return False
+        return True
+    
     def is_good(self, txt, f=0.35):
         """
         T/F return : T iff the lines in txt (a list of txt lines)
@@ -962,6 +926,7 @@ class TextSource(object):
             return not np.all(chs)
 
         x= [ (len(l)> self.min_nchar
+                and self.check_valid_word(l)
                  and self.check_symb_frac(l,f)
                  and is_txt(l)) for l in txt ]
         return x
@@ -987,34 +952,34 @@ class TextSource(object):
         def h_lines(niter=100):
             lines = ['']
             iter = 0
-            while not np.all(self.is_good(lines,f)) and iter < niter:
+            while not np.all(self.is_good(lines, f)) and iter < niter:
                 iter += 1
-                line_start = np.random.choice(len(self.txt)-nline)
-                lines = [self.txt[line_start+i] for i in range(nline)]
+                line_start = np.random.choice(len(self.txt) - nline)
+                lines = [self.txt[line_start + i] for i in range(nline)]
             return lines
-
+    
         lines = ['']
         iter = 0
-        while not np.all(self.is_good(lines,f)) and iter < niter:
+        while not np.all(self.is_good(lines, f)) and iter < niter:
             iter += 1
             lines = h_lines(niter=100)
             # get words per line:
             nline = len(lines)
             for i in range(nline):
                 words = lines[i].split()
-                dw = len(words)-nword[i]
+                dw = len(words) - nword[i]
                 if dw > 0:
-                    first_word_index = random.choice(range(dw+1))
-                    lines[i] = ' '.join(words[first_word_index:first_word_index+nword[i]])
-
-                while len(lines[i]) > nchar_max: #chop-off characters from end:
+                    first_word_index = random.choice(range(dw + 1))
+                    lines[i] = ' '.join(words[first_word_index:first_word_index + nword[i]])
+            
+                while len(lines[i]) > nchar_max:  # chop-off characters from end:
                     if not np.any([ch.isspace() for ch in lines[i]]):
                         lines[i] = ''
                     else:
-                        lines[i] = lines[i][:len(lines[i])-lines[i][::-1].find(' ')].strip()
-        
-        if not np.all(self.is_good(lines,f)):
-            return #None
+                        lines[i] = lines[i][:len(lines[i]) - lines[i][::-1].find(' ')].strip()
+    
+        if not np.all(self.is_good(lines, f)):
+            return  # None
         else:
             return lines
 
@@ -1025,16 +990,16 @@ class TextSource(object):
     @wrap(entering, exiting)
     def sample_word(self,nline_max,nchar_max,niter=100):
         rand_line = self.txt[np.random.choice(len(self.txt))]
-        words = rand_line
+        words = rand_line.split()
         rand_word = random.choice(words)
-
+        
         iter = 0
         while iter < niter and (not self.is_good([rand_word])[0] or len(rand_word)>nchar_max):
             rand_line = self.txt[np.random.choice(len(self.txt))]
-            words = rand_line
+            words = rand_line.split()
             rand_word = random.choice(words)
             iter += 1
-
+            
         if not self.is_good([rand_word])[0] or len(rand_word)>nchar_max:
             return []
         else:
@@ -1052,6 +1017,7 @@ class TextSource(object):
         nword = [max(1,int(np.ceil(n))) for n in nword]
 
         lines = self.get_lines(nline, nword, nchar_max, f=0.35)
+        
         if lines is not None:
             return '\n'.join(lines)
         else:
