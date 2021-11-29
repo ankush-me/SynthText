@@ -84,7 +84,7 @@ class TextRegions(object):
             f = (h > TextRegions.minHeight 
                 and w > TextRegions.minWidth
                 and TextRegions.minAspect < w/h < TextRegions.maxAspect
-                and area[idx]/w*h > TextRegions.pArea)
+                and area[idx]/(w*h) > TextRegions.pArea)
             filt.append(f)
             R.append(rot)
 
