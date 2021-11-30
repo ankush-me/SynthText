@@ -133,7 +133,7 @@ def process_db_parallel(base_dir, th=0.11):
 import argparse
 
 parser = argparse.ArgumentParser(description='generate segmentation map')
-parser.add_argument('--base_dir', default='h5py_files')
+parser.add_argument('--base_dir', default='../h5py_files')
 args = parser.parse_args()
 base_dir = args.base_dir # directory containing the ucm.mat, i.e., output of run_ucm.m
 process_db_parallel(base_dir)

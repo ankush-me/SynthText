@@ -25,8 +25,8 @@ def create_image_dataset(image_path, output_dir):
 import argparse
 
 parser = argparse.ArgumentParser(description='Genereate image names file')
-parser.add_argument('--image_path', default='/home/shubham/Documents/imgs3',)
-parser.add_argument('--output_dir', default='h5py_files', help="output base directory")
+parser.add_argument('--image_path', default='/home/shubham/Documents/MTP/datasets/imgs',)
+parser.add_argument('--output_dir', default='../h5py_files', help="output base directory")
 
 args = parser.parse_args()
 create_image_dataset(args.image_path, args.output_dir)

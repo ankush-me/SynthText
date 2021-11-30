@@ -37,4 +37,4 @@ function runUcm(img_dir,base_dir)
 	    names{i} = imname{i};
 	    ucms{i}= im2ucm(im,'fast');
     end
-    save(strcat(base_dir,'/ucm1.mat'),'ucms','names','-v7.3');
+    save(strcat(base_dir,'/ucm.mat'),'ucms','names','-v7.3');

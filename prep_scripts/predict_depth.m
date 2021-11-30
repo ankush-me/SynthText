@@ -30,8 +30,8 @@ function predict_depth(imdir,out_file)
     mdl = load(opts.model_file.indoor);
     model.indoor = mdl.data_obj;
     mdl = load(opts.model_file.outdoor);
-    model.outdoor = mdl.data_obj;
-
+    model.outdoor = mdl.data_obj;   
+   
     if gpuDeviceCount==0
         fprintf(' ** No GPU found. Using CPU...\n');
         opts.useGpu=false;
@@ -43,7 +43,6 @@ function predict_depth(imdir,out_file)
     for i = 1:N
         fprintf('%d of %d\n',i,N);
         imname = imnames{i};
-
         img = read_img_rgb(fullfile(opts.imdir,imname));
 
         imtype = 'indoor';

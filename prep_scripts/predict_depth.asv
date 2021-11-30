@@ -5,7 +5,7 @@
 
 % Author: Ankush Gupta
 
-function predict_depth()
+function predict_depth(imdir,out_file)
     %setup vlfeat
     run( '../libs/vlfeat/toolbox/vl_setup');
     % setup matconvnet
@@ -17,9 +17,9 @@ function predict_depth()
     opts.useGpu=true;
     opts.inpaint = true;
     opts.normalize_depth = false; % limit depth to [0,1]
-    opts.imdir = '/home/shubham/Documents/imgs3';
+    opts.imdir = imdir
 
-    opts.out_h5 = 'h5py_files/depth.h5';
+    opts.out_h5 = out_file
 
     % these should point to the pre-trained models from:
     %  https://bitbucket.org/fayao/dcnf-fcsp/
@@ -30,8 +30,8 @@ function predict_depth()
     mdl = load(opts.model_file.indoor);
     model.indoor = mdl.data_obj;
     mdl = load(opts.model_file.outdoor);
-    model.outdoor = mdl.data_obj;
-
+    model.outdoor = mdl.data_obj;   
+   
     if gpuDeviceCount==0
         fprintf(' ** No GPU found. Using CPU...\n');
         opts.useGpu=false;
@@ -49,12 +49,11 @@ function predict_depth()
         imtype = 'indoor';
         opts.sp_size=20;
         opts.max_edge=640;
-        depth1  = get_depth(img,model.(imtype),opts);
+        depth  = get_depth(img,model.(imtype),opts);
 
         imtype = 'outdoor';
-        depth2  = get_depth(img,model.(imtype),opts);
-        depth = [depth1;depth2]
-        d= depth[1]
+        depth(:,:,2)  = get_depth(img,model.(imtype),opts);
+       
         save_depth(imname,depth,opts);
     end
 end
