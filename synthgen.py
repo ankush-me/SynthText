@@ -660,7 +660,7 @@ class RendererV3(object):
         
         ratio = text_area_before_homography/text_area_after_homography
         
-        if ratio >= 4:   # remove homographies/regions that distort text too much.
+        if ratio >= 3:   # remove homographies/regions that distort text too much.
             print("homography distortion is too large, filtering the region.")
             return
         
@@ -676,8 +676,9 @@ class RendererV3(object):
             text_mask = self.feather(text_mask, min_h)
 
         im_final = self.colorizer.color(rgb,[text_mask],np.array([min_h]))
-
-        return im_final, text, bb, collision_mask, font.name
+        
+        text= text.split(" ")
+        return im_final, text, bb, collision_mask, [font.name]*len(text)
 
     @wrap(entering, exiting)
     def get_num_text_regions(self, nregions):
@@ -790,8 +791,8 @@ class RendererV3(object):
                     # update the region collision mask:
                     place_masks[ireg] = collision_mask
                     # store the result:
-                    itext.append(text)
-                    ifont.append(font)
+                    itext.extend(text)
+                    ifont.extend(font)
                     ibb.append(bb)
 
             if  placed:

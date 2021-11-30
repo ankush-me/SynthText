@@ -744,7 +744,7 @@ class RenderFont(object):
             # position the text within the mask:
             text_mask,loc,bb, _ = self.place_text([txt_arr], mask, [box])
             if len(loc) > 0:#successful in placing the text collision-free:
-                return text_mask,loc[0],bb[0],text
+                return text_mask,loc[0],bb[0],txt
                 
         return #None
 
