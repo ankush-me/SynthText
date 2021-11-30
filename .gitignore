@@ -8,5 +8,8 @@ results/
 /mcg/
 /.idea/
 /libs/
+*.png
 
 *.pyc
+*.jpg
+*.pfm

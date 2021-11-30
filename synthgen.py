@@ -7,6 +7,8 @@ Main script for synthetic text rendering.
 
 from __future__ import division
 import copy
+import random
+
 import cv2
 import h5py
 from PIL import Image
@@ -18,6 +20,7 @@ import scipy.ndimage as sim
 import scipy.spatial.distance as ssd
 
 import configuration
+import create_recognition_dataset
 import synth_utils as su
 import text_utils as tu
 from colorize3_poisson import Colorize
@@ -33,10 +36,10 @@ class TextRegions(object):
     """
     minWidth = 30 #px
     minHeight = 30 #px
-    minAspect = 0.7 # w > 0.3*h
+    minAspect = 0.3 # w > 0.3*h
     maxAspect = 15
     minArea = 100 # number of pix
-    pArea = 0.60 # area_obj/area_minrect >= 0.6
+    pArea = 0.6 # area_obj/area_minrect >= 0.6
 
     # RANSAC planar fitting params:
     dist_thresh = 0.10 # m
@@ -98,16 +101,17 @@ class TextRegions(object):
             xs,ys = np.where(mask)
             coords = np.c_[xs,ys].astype('float32')
             edge_pixel_count = TextRegions.get_edge_pixel_count(canny_image, coords)
-            
+            #img = 255*(mask==True)
+            #cv2.imwrite("temp/{}.jpg".format(i), img)
             rect = cv2.minAreaRect(coords)
             #box = np.array(cv2.cv.BoxPoints(rect))
             box = np.array(cv2.boxPoints(rect))
-            
+            #a = np.sum(area)
             h,w,rot = TextRegions.get_hw(box,return_rot=True)
             f = (h > TextRegions.minHeight 
                 and w > TextRegions.minWidth
                 and TextRegions.minAspect < w/h < TextRegions.maxAspect
-                and area[idx]/w*h > TextRegions.pArea
+                and area[idx]/(w*h) > TextRegions.pArea
                 and edge_pixel_count/len(coords) <= 0.1)
             filt.append(f)
             R.append(rot)
@@ -246,7 +250,7 @@ def nice_homography(H):
     else:
         clockwise = True
     return clockwise
-
+ 
 def rescale_frontoparallel(p_fp,box_fp,p_im):
     """
     The fronto-parallel image region is rescaled to bring it in 
@@ -308,7 +312,9 @@ def get_text_placement_mask(xyz,mask,plane,pad=2,viz=False):
     # unrotate in 2D plane:
     rect = cv2.minAreaRect(pts_fp[0].copy().astype('float32'))
     box = np.array(cv2.boxPoints(rect))
+    box,_,_ = create_recognition_dataset.order_points(box)
     R2d = su.unrotate2d(box.copy())
+    #print(np.degrees(np.arccos(R2d[0][0])))
     box = np.vstack([box,box[0,:]]) #close the box for visualization
 
     mu = np.median(pts_fp[0],axis=0)
@@ -444,7 +450,7 @@ class RendererV3(object):
         self.min_asp_ratio = 0.7 #
 
         self.max_text_regions = 7
-
+        self.feather_prob = 0.1
         self.max_time = max_time
 
     @wrap(entering, exiting)
@@ -464,12 +470,13 @@ class RendererV3(object):
             res = get_text_placement_mask(xyz,seg==l,regions['coeff'][idx],pad=2)
             if res is not None:
                 mask,H,Hinv = res
-                if nice_homography(Hinv):      #in some regions flipped text is rendered. ref : https://github.com/ankush-me/SynthText/issues/121
+                if nice_homography(H): #in some regions flipped text is rendered. ref :##
+                    # https://github.com/ankush-me/SynthText/issues/121
                     masks.append(mask)
                     Hs.append(H)
                     Hinvs.append(Hinv)
                     filt[idx] = True
-                
+            
         regions = self.filter_regions(regions,filt)
         regions['place_mask'] = masks
         regions['homography'] = Hs
@@ -621,7 +628,6 @@ class RendererV3(object):
     @wrap(entering, exiting)
     def place_text(self,rgb,collision_mask,H,Hinv):
         font = self.text_renderer.font_state.sample()
-        f=font
         font = self.text_renderer.font_state.init_font(font)
         
         render_res = self.text_renderer.render_sample(font,collision_mask)
@@ -646,8 +652,17 @@ class RendererV3(object):
        
         collision_mask += (255 * (a==1)).astype('uint8')
 
+        text_area_before_homography = np.sum(text_mask > 0)
         bb_orig = bb.copy()
         text_mask = self.warpHomography(text_mask,H,rgb.shape[:2][::-1])
+        #cv2.imwrite("text_mask.jpg", text_mask)
+        text_area_after_homography= np.sum(text_mask>0)
+        
+        ratio = text_area_before_homography/text_area_after_homography
+        
+        if ratio >= 4:   # remove homographies/regions that distort text too much.
+            print("homography distortion is too large, filtering the region.")
+            return
         
         if not self.bb_filter(bb_orig,bb,text):
             #warn("bad charBB statistics")
@@ -657,11 +672,12 @@ class RendererV3(object):
         min_h = self.get_min_h(bb,text)
         
         #feathering:
-        #text_mask = self.feather(text_mask, min_h)
+        if random.uniform(0,1) <= self.feather_prob:
+            text_mask = self.feather(text_mask, min_h)
 
         im_final = self.colorizer.color(rgb,[text_mask],np.array([min_h]))
 
-        return im_final, text, bb, collision_mask
+        return im_final, text, bb, collision_mask, font.name
 
     @wrap(entering, exiting)
     def get_num_text_regions(self, nregions):
@@ -715,7 +731,8 @@ class RendererV3(object):
 
             # finally place some text:
             nregions = len(regions['place_mask'])
-            if nregions < 1: # no good region to place text on
+            if nregions < 1:
+                print("no good region found in image")# no good region to place text on
                 return []
         except:
             # failure in pre-text placement
@@ -729,7 +746,7 @@ class RendererV3(object):
 
             print (colorize(Color.CYAN, " ** instance # : %d"%i))
 
-            idict = {'img':[], 'charBB':None, 'wordBB':None, 'txt':None}
+            idict = {'img':[], 'charBB':None, 'wordBB':None, 'txt':None , 'font': None}
 
             m = self.get_num_text_regions(nregions)#np.arange(nregions)#min(nregions, 5*ninstance*self.max_text_regions))
             reg_idx = np.arange(min(2*m,nregions))
@@ -740,13 +757,14 @@ class RendererV3(object):
             img = rgb.copy()
             itext = []
             ibb = []
-          
+            ifont=[]
 
             # process regions: 
             num_txt_regions = len(reg_idx)
             NUM_REP = 3 # re-use each region three times:
             reg_range = np.arange(NUM_REP * num_txt_regions) % num_txt_regions
             for idx in reg_range:
+                
                 ireg = reg_idx[idx]
                 try:
                     if self.max_time is None:
@@ -768,11 +786,12 @@ class RendererV3(object):
 
                 if txt_render_res is not None:
                     placed = True
-                    img,text,bb,collision_mask= txt_render_res
+                    img,text,bb,collision_mask, font= txt_render_res
                     # update the region collision mask:
                     place_masks[ireg] = collision_mask
                     # store the result:
                     itext.append(text)
+                    ifont.append(font)
                     ibb.append(bb)
 
             if  placed:
@@ -781,6 +800,7 @@ class RendererV3(object):
                 idict['txt'] = itext
                 idict['charBB'] = np.concatenate(ibb, axis=2)
                 idict['wordBB'] = idict['charBB']
+                idict['font']=ifont
                 res.append(idict.copy())
                 if viz:
                     viz_textbb(1,img, [idict['wordBB']], alpha=1.0)

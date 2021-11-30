@@ -96,6 +96,7 @@ def pngB_to_np(pngB):
 # In[66]:
 
 
+
 # To get the bound of the glyph
 def get_Bound_Glyph(abc, buf, hb_font, ft_face, text_size):
     # Setting Starting position of the first glyph
@@ -193,8 +194,7 @@ def boundB( imm):
     rect = cv2.minAreaRect(coords)
     box = np.array(cv2.boxPoints(rect))
     box = np.int0(box)
-    
-
+    box  = np.where(box < 0, 0, box)
     return (leftx, top, rightx - leftx + 1, bottom - top + 1 , box)
 
 # In[639]:
@@ -318,7 +318,7 @@ class RenderFont(object):
         # the minimum number of characters that should fit in a mask
         # to define the maximum font height.
         self.min_nchar = 2
-        self.min_font_h = 24 #px : 0.6*12 ~ 7px <= actual minimum height
+        self.min_font_h = 16 #px : 0.6*12 ~ 7px <= actual minimum height
         self.max_font_h = 120 #px
         self.p_flat = 0.10
 
@@ -495,15 +495,19 @@ class RenderFont(object):
                use curved baseline for rendering word
                """
 
-        word_text = word_text.replace('\u200c', ' ')
-        word_text = word_text.replace('\u201c', ' ')
+        
+      
+       
+        
         wl = len(word_text)
         isword = len(word_text.split()) == 1
     
         # do curved iff, the length of the word <= 10
-        if not isword or wl > 10 or np.random.rand() > self.p_curved:
+        if not isword or wl > 15 or np.random.rand() > self.p_curved:
             return self.render_multiline(font, word_text)
-    
+
+
+
         # create the surface:
         lspace = font.get_sized_height() + 1
         lbound = font.get_rect(word_text)
@@ -537,7 +541,7 @@ class RenderFont(object):
         ctx.paint()
     
         word_text = word_text.strip()
-        word_text_len = len(word_text)
+        #word_text_len = len(word_text)
         ### Added on feb, 22, 2019
     
         ## single word will be there.
@@ -704,13 +708,27 @@ class RenderFont(object):
             nline,nchar = self.get_nline_nchar(mask.shape[:2],f_h,f_h*f_asp)
             #print "  > nline = %d, nchar = %d"%(nline, nchar)
 
-            assert nline >= 1 and nchar >= self.min_nchar
+            if not( nline >= 1 and nchar >= self.min_nchar):
+                continue
 
             # sample text:
             text_type = sample_weighted(self.p_text)
             text = self.text_source.sample(nline,nchar,text_type)
+
+           
+            
             if len(text)==0 or np.any([len(line)==0 for line in text]):
                 continue
+
+            text = text.replace('\u200c', ' ')
+            text = text.replace('\u201c', ' ')
+            
+            # ref: https://github.com/ankush-me/SynthText/issues/48
+            text_size = font.get_metrics(text.replace("\n", " "))
+            supported = len(list((filter(lambda t: t is None, text_size)))) == 0
+            if not supported:
+                continue
+            
             #print colorize(Color.GREEN, text)
 
             # render the text:
@@ -727,6 +745,7 @@ class RenderFont(object):
             text_mask,loc,bb, _ = self.place_text([txt_arr], mask, [box])
             if len(loc) > 0:#successful in placing the text collision-free:
                 return text_mask,loc[0],bb[0],text
+                
         return #None
 
     @wrap(entering, exiting)

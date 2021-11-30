@@ -76,9 +76,10 @@ def add_res_to_db(imgname, res, db):
 		db['data'].create_dataset(dname, data=res[i]['img'])
 		db['data'][dname].attrs['charBB'] = res[i]['charBB']
 		db['data'][dname].attrs['wordBB'] = res[i]['wordBB']
-		db['data'][dname].attrs['font'] =res[i]['font']
+		db['data'][dname].attrs['font'] = res[i]['font']
 		text_utf8 = [char.encode('utf8') for char in res[i]['txt']]
 		db['data'][dname].attrs['txt'] = text_utf8
+
 
 def save_res_to_imgs(imgname, res):
 	"""
@@ -91,7 +92,6 @@ def save_res_to_imgs(imgname, res):
 		# Swap bgr to rgb so we can save into image file
 		img = res[i]['img'][..., [2, 1, 0]]
 		cv2.imwrite(filename, img)
-
 
 
 @wrap(entering, exiting)
@@ -107,7 +107,7 @@ def main(viz=False):
 	print(colorize(Color.GREEN, 'Storing the output in: ' + OUT_FILE, bold=True))
 	
 	img_db = h5py.File("h5py_files/img_db.h5", "r")
-	depth_db = h5py.File('h5py_files/depth.h5', 'r')
+	depth_db = h5py.File('h5py_files/depth1.h5', 'r')
 	seg_db = h5py.File('h5py_files/seg_uint16.h5', 'r')
 	
 	# get the names of the image files in the dataset:
@@ -118,10 +118,14 @@ def main(viz=False):
 		NUM_IMG = N
 	start_idx, end_idx = 0, min(NUM_IMG, N)
 	
-	RV3 = RendererV3(DATA_PATH, max_time=SECS_PER_IMG)  # TODO change max_time
+	RV3 = RendererV3(DATA_PATH, max_time=None)  # TODO change max_time
 	for i in range(start_idx, end_idx):
 		
 		imname = imnames[i]
+		
+		if "005678" not in imname:
+			continue
+		
 		try:
 			# get the image:
 			# img = Image.fromarray(db['image'][imname][:])
@@ -131,10 +135,11 @@ def main(viz=False):
 			#  there are 2 estimates of depth (represented as 2 "channels")
 			#  here we are using the second one (in some cases it might be
 			#  useful to use the other one):
-			depth = depth_db[imname][:]
+			depth = depth_db[imname][:].T
 			
-			#depth = depth[:, :, 0]
-
+			depth = depth[:, :, 1]
+			from utils import io
+			io.write_depth('depth1', depth)
 			# get segmentation:
 			seg = seg_db["mask"][imname][:].astype('float32')
 			area = seg_db["mask"][imname].attrs['area']
@@ -144,10 +149,7 @@ def main(viz=False):
 			sz = depth.shape[:2][::-1]
 			img = np.array(img.resize(sz, Image.ANTIALIAS))
 			seg = np.array(Image.fromarray(seg).resize(sz, Image.NEAREST))
-			#from utils import io
-			#io.write_segm_img("seg.jpg", img, seg, alpha=0.5)
-			#io.write_depth('depth', depth)
-			#get_segmentation_crop(img, seg, label)
+			# get_segmentation_crop(img, seg, label)
 			
 			print(colorize(Color.RED, '%d of %d' % (i, end_idx - 1), bold=True))
 			res = RV3.render_text(img, depth, seg, area, label,
@@ -158,8 +160,8 @@ def main(viz=False):
 			# visualize the output:
 			if viz:
 				save_res_to_imgs(imname, res)
-			# if 'q' in input(colorize(Color.RED,'continue? (enter to continue, q to exit): ',True)):
-			#  break
+		# if 'q' in input(colorize(Color.RED,'continue? (enter to continue, q to exit): ',True)):
+		#  break
 		except:
 			traceback.print_exc()
 			print(colorize(Color.GREEN, '>>>> CONTINUING....', bold=True))
@@ -188,6 +190,6 @@ if __name__ == '__main__':
 	OUT_FILE = 'results/SynthText_{}.h5'.format(configuration.lang)
 	
 	main(args.viz)
-	# TODO remove this line. kept only for debuggging during development.
-	#visualize_results.main('results/SynthText_{}.h5'.format(configuration.lang))
-	#create_recognition_dataset.main('results/SynthText_{}.h5'.format(configuration.lang))
+# TODO remove this line. kept only for debuggging during development.
+# visualize_results.main('results/SynthText_{}.h5'.format(configuration.lang))
+# create_recognition_dataset.main('results/SynthText_{}.h5'.format(configuration.lang))

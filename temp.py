@@ -30,3 +30,40 @@ for i in range(400):
         text_mask = 255*(text_mask>0).astype('uint8')
         im=Image.fromarray(text_mask , 'L')
         im.save("temp/{}_{}.jpg".format(f["font"], text[0:min(len(text),3)]))"""
+
+
+"""lines = open("data/fonts/fontlist/fontlist_HI.txt").readlines()
+fonts = ["Poppins",
+"Rajdhani",
+"RozhaOne",
+"sarpanch",
+"Teko",
+"Hind",
+"Sahadeva",
+"samanata",
+"varta",
+"Amiko",
+"Arya",
+"Biryani",
+"Dekko",
+"Dinah",
+"InknutAntiqua",
+"khand",
+"kurale",
+"modak",
+"Tilana"]
+a = lines
+for line in lines:
+	for j in fonts:
+		if j in line:
+			a.remove(line)
+			
+print("".join(map(str, a)))"""
+s= "ट्रांसपोर्ट"
+s1='टं्रासपोर्ट'
+print(list(s))
+print(list(s1))
+a=['थ ','ऺ ' ]
+
+
+a=['ऀ '	,'ँ', 	'ं', 	'ः','ऺ', ]

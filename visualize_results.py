@@ -64,12 +64,14 @@ def main(db_fname):
         charBB = db['data'][k].attrs['charBB']
         wordBB = db['data'][k].attrs['wordBB']
         txt = db['data'][k].attrs['txt']
+        font = db['data'][k].attrs['font']
         j= k.replace(".", "_")
         viz_textbb(rgb, [charBB], wordBB, image_name=j )
         print ("image name        : ", colorize(Color.RED, k, bold=True))
         print ("  ** no. of chars : ", colorize(Color.YELLOW, charBB.shape[-1]))
         print ("  ** no. of words : ", colorize(Color.YELLOW, wordBB.shape[-1]))
         print ("  ** text         : ", colorize(Color.GREEN, txt))
+        print ('  ** font         : ', colorize(Color.GREEN, font))
         #if 'q' in input("next? ('q' to exit) : "):
         #    break
     db.close()
