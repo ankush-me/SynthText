@@ -690,7 +690,7 @@ class RendererV3(object):
             rnd = np.random.beta(5.0,1.0)
         return int(np.ceil(nmax * rnd))
 
-
+        
     @wrap(entering, exiting)
     def render_text(self,rgb,depth,seg,area,label,ninstance=1,viz=False):
         """

@@ -31,19 +31,19 @@ INSTANCE_PER_IMAGE = 10  # no. of times to use the same image
 SECS_PER_IMG = 5
 
 # path to the data-file, containing image, depth and segmentation:
-DATA_PATH = 'data'
-DB_FNAME = osp.join(DATA_PATH, 'dset.h5')
+
 # url of the data (google-drive public file):
 DATA_URL = 'http://www.robots.ox.ac.uk/~ankush/data.tar.gz'
-OUT_FILE = 'results/SynthText_{}.h5'.format(configuration.lang)
-OUT_DIR = 'results'
+OUT_FILE = './SynthText_{}.h5'.format(configuration.lang)
+OUT_DIR = './'
 
 
-def get_data():
+def get_data(data_path):
 	"""
 	Download the image,depth and segmentation data:
 	Returns, the h5 database.
 	"""
+	DB_FNAME=osp.join(data_path, 'dset.h5')
 	if not osp.exists(DB_FNAME):
 		try:
 			colorprint(Color.BLUE, '\tdownloading data (56 M) from: ' + DATA_URL, bold=True)
@@ -95,10 +95,10 @@ def save_res_to_imgs(imgname, res):
 
 
 @wrap(entering, exiting)
-def main(viz=False):
+def main(data_path, viz=False):
 	# open databases:
 	print(colorize(Color.BLUE, 'getting data..', bold=True))
-	db = get_data()
+	db = get_data(data_path)
 	print(colorize(Color.BLUE, '\t-> done', bold=True))
 	
 	# open the output h5 file:
@@ -106,9 +106,9 @@ def main(viz=False):
 	out_db.create_group('/data')
 	print(colorize(Color.GREEN, 'Storing the output in: ' + OUT_FILE, bold=True))
 	
-	img_db = h5py.File("h5py_files/img_db.h5", "r")
-	depth_db = h5py.File('h5py_files/depth.h5', 'r')
-	seg_db = h5py.File('h5py_files/seg_uint16.h5', 'r')
+	img_db = h5py.File("./img_db.h5", "r")
+	depth_db = h5py.File('./depth.h5', 'r')
+	seg_db = h5py.File('./seg.h5', 'r')
 	
 	# get the names of the image files in the dataset:
 	imnames = sorted(img_db.keys())
@@ -118,9 +118,9 @@ def main(viz=False):
 		NUM_IMG = N
 	start_idx, end_idx = 0, min(NUM_IMG, N)
 	
-	RV3 = RendererV3(DATA_PATH, max_time=SECS_PER_IMG)  # TODO change max_time
+	RV3 = RendererV3(data_path, max_time=SECS_PER_IMG)  # TODO change max_time
 	for i in range(start_idx, end_idx):
-		
+			
 		imname = imnames[i]
 		try:
 			# get the image:
@@ -177,6 +177,7 @@ if __name__ == '__main__':
 	parser.add_argument('--lang', default='ENG',
 	                    help='Select language : ENG/HI')
 	
+	parser.add_argument("--data_path" , default="data/")
 	parser.add_argument('--text_source', default='newsgroup/newsgroup.txt', help="text_source")
 	args = parser.parse_args()
 	
@@ -185,9 +186,9 @@ if __name__ == '__main__':
 	configuration.fontlist_file = "fonts/fontlist/fontlist_{}.txt".format(args.lang)
 	configuration.char_freq_path = 'models/{}/char_freq.cp'.format(args.lang)
 	configuration.font_px2pt = 'models/{}/font_px2pt.cp'.format(args.lang)
-	OUT_FILE = 'results/SynthText_{}.h5'.format(configuration.lang)
+	OUT_FILE = './SynthText_{}.h5'.format(configuration.lang)
 	
-	main(args.viz)
+	main(args.data_path , args.viz)
 	# TODO remove this line. kept only for debuggging during development.
 	#visualize_results.main('results/SynthText_{}.h5'.format(configuration.lang))
 	#create_recognition_dataset.main('results/SynthText_{}.h5'.format(configuration.lang))

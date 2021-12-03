@@ -1,3 +1,5 @@
+DATA_PATH="/data"
+
 lang = "HI"
 text_soruce = "newsgroup/newsgroup_{}.txt".format(lang)
 

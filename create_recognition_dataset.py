@@ -115,6 +115,16 @@ def main(db_fname):
 		print("  ** text         : ", colorize(Color.GREEN, txt))
 		print('  ** font         : ', colorize(Color.GREEN, font))
 
-if __name__ == '__main__':
-	main('results/SynthText_{}.h5'.format(configuration.lang))
 
+if __name__ == '__main__':
+	import argparse
+	
+	parser = argparse.ArgumentParser(description='crop images and create recogntion dataset')
+	
+	parser.add_argument('--lang', default='ENG',
+	                    help='Select language : ENG/HI')
+	args = parser.parse_args()
+	
+	configuration.lang = args.lang
+	
+	main('./SynthText_{}.h5'.format(configuration.lang))

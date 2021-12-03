@@ -77,5 +77,16 @@ def main(db_fname):
     db.close()
 
 if __name__=='__main__':
-    main('results/SynthText_{}.h5'.format(configuration.lang))
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='visualize Synthetic Scene-Text Images')
+    
+    parser.add_argument('--lang', default='ENG',
+                        help='Select language : ENG/HI')
+    args = parser.parse_args()
+
+
+    configuration.lang = args.lang
+    
+    main('./SynthText_{}.h5'.format(configuration.lang))
 
