@@ -13,3 +13,9 @@ results/
 *.pyc
 *.jpg
 *.pfm
+
+img_lmdb/
+dep_lmdb/
+seg_lmdb/
+
+.idea/

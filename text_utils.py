@@ -2,7 +2,7 @@ from __future__ import division
 
 import io
 
-import fribidi
+# import fribidi
 import numpy as np
 import matplotlib.pyplot as plt 
 import scipy.io as sio
@@ -36,8 +36,8 @@ import nltk
 import qahirah as qah
 from qahirah import     CAIRO,     Colour,     Glyph,     Vector
 ft = qah.get_ft_lib()
-import fribidi as fb
-from fribidi import     FRIBIDI as FB
+# import fribidi as fb
+# from fribidi import     FRIBIDI as FB
 import harfbuzz as hb
 from array import array
 
