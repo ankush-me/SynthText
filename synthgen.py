@@ -96,6 +96,7 @@ class TextRegions(object):
         area = area[area > TextRegions.minArea]
         filt,R = [],[]
         canny_image = TextRegions.get_canny_image(img)
+        #cv2.imwrite("canny.jpg", canny_image)
         for idx,i in enumerate(good):
             mask = seg==i
             xs,ys = np.where(mask)
@@ -112,7 +113,7 @@ class TextRegions(object):
                 and w > TextRegions.minWidth
                 and TextRegions.minAspect < w/h < TextRegions.maxAspect
                 and area[idx]/(w*h) > TextRegions.pArea
-                and edge_pixel_count/len(coords) <= 0.1)
+                and edge_pixel_count/len(coords) <= 0.2)
             filt.append(f)
             R.append(rot)
 
@@ -470,7 +471,7 @@ class RendererV3(object):
             res = get_text_placement_mask(xyz,seg==l,regions['coeff'][idx],pad=2)
             if res is not None:
                 mask,H,Hinv = res
-                if nice_homography(H): #in some regions flipped text is rendered. ref :##
+                if nice_homography(H) and nice_homography(Hinv): #in some regions flipped text is rendered. ref :##
                     # https://github.com/ankush-me/SynthText/issues/121
                     masks.append(mask)
                     Hs.append(H)
@@ -660,8 +661,9 @@ class RendererV3(object):
         
         ratio = text_area_before_homography/text_area_after_homography
         
-        if ratio >= 3:   # remove homographies/regions that distort text too much.
-            print("homography distortion is too large, filtering the region.")
+        if ratio > 2.5:
+            # remove homographies/regions that distort text too much.
+            print("homography distortion is too large, filtering the region: {}".format(ratio))
             return
         
         if not self.bb_filter(bb_orig,bb,text):

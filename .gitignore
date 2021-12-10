@@ -19,3 +19,5 @@ dep_lmdb/
 seg_lmdb/
 
 .idea/
+*.xml
+*.tar
