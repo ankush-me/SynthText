@@ -128,6 +128,10 @@ def main(data_path,depth_dir, img_dir, gt_file_name,out_dir,  viz=False):
 	random.shuffle(range_list)
 	res_list=[]
 	for i in range(start_idx, end_idx):
+
+		# if(i == 10):
+		# 	break
+
 		imname = imnames[range_list[i]].strip()
 		try:
 			# get the image:

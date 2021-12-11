@@ -7,7 +7,7 @@
       <excludeFolder url="file://$MODULE_DIR$/img_lmdb" />
       <excludeFolder url="file://$MODULE_DIR$/seg_lmdb" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (SynthText2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

@@ -21,3 +21,6 @@ seg_lmdb/
 .idea/
 *.xml
 *.tar
+
+hindi-sample-detection/
+hindi-sample-recognition/

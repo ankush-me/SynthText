@@ -2,5 +2,9 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/harfpy" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/python_freetype" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/qahirah" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/xyz/SynthText" vcs="Git" />
   </component>
 </project>
