@@ -181,7 +181,7 @@ def create_detection_dataset(input_path, output_path, gt_file):
         img_path = os.path.join(input_path, img_name)
 
         # print(line)
-        print(img_name)
+        # print(img_name)
 
         with open(img_path, 'rb') as f:
             img = cv2.imread(img_path)
@@ -214,12 +214,19 @@ def create_detection_dataset(input_path, output_path, gt_file):
             cache[key] = [img_bin, [word_bb], [text], [font[:-1]]]
 
         if cnt % 10000 == 0:
-            print("Done {}/{}", cnt, lines)
+            print("Done " + str(cnt) + "/" + str(len(lines)))
+
+        cnt += 1
 
     writeCache(env, cache)
 
     print("Done")
 
+def create_detection_dataset_combined(input_path, output_path):
+    for file in os.listdir(input_path):
+        if file.endswith(".txt"):
+            print("Processing ", file)
+            create_detection_dataset(input_path, output_path, os.path.join(input_path, file))
 
 def create_recognition_dataset_warped_unwarped(images_path, input_path, output_path):
     """
@@ -245,7 +252,6 @@ def create_recognition_dataset_warped_unwarped(images_path, input_path, output_p
     print("Done")
 
     print()
-    print()
     print("Splitting train and val keys")
     val_keys = random.sample(keys, (int)(0.1 * len(keys)))
     train_keys = []
@@ -258,7 +264,6 @@ def create_recognition_dataset_warped_unwarped(images_path, input_path, output_p
     print("Done")
 
     ##### TRAINING DATASET #####
-    print()
     print()
     print("Start creating training dataset...")
 
@@ -303,7 +308,7 @@ def create_recognition_dataset_warped_unwarped(images_path, input_path, output_p
             if cnt % 10 == 0:
                 writeCache(env, cache)
                 cache = {}
-                print('Written %d', cnt)
+                print('Done ', cnt)
 
             cnt += 1
 
@@ -311,7 +316,6 @@ def create_recognition_dataset_warped_unwarped(images_path, input_path, output_p
     print("Done")
 
     ##### VALIDATION DATASET #####
-    print()
     print()
     print("Start creating validation dataset...")
 
@@ -356,7 +360,7 @@ def create_recognition_dataset_warped_unwarped(images_path, input_path, output_p
             if cnt % 10 == 0:
                 writeCache(env, cache)
                 cache = {}
-                print('Written %d', cnt)
+                print('Done ', cnt)
 
             cnt += 1
 
@@ -402,6 +406,5 @@ if __name__ == '__main__':
     configuration.lang = args.lang
 
     # main('./SynthText_{}.h5'.format(configuration.lang))
-    # create_detection_dataset("/home/manideep/Desktop/Indic OCR/hindi-sample/output", "hindi-sample-detection", "/home/manideep/Desktop/Indic OCR/hindi-sample/output/gt1.txt")
-    create_recognition_dataset_warped_unwarped("/home/manideep/Desktop/Indic OCR/hindi-sample/output",
-                                               "hindi-sample-detection", "hindi-sample-recognition")
+    # create_detection_dataset_combined("/home/manideep/Desktop/Indic OCR/hindi-sample/output", "hindi-sample-detection")
+    create_recognition_dataset_warped_unwarped("/home/manideep/Desktop/Indic OCR/hindi-sample/output", "hindi-sample-detection", "hindi-sample-recognition")
