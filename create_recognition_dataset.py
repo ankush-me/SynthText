@@ -114,7 +114,7 @@ def crop_words(text_im, bb, image_name=None, text=None):
 
     # print(min_x, max_x, min_y, max_y)
 
-    unwarped = text_im[int(min_y): int(max_y), int(min_x) : int(max_x)]
+    unwarped = text_im[int(min_y): int(max_y), int(min_x): int(max_x)]
     # print("Unwarped", unwarped)
 
     # bouding boxes are cropped using 2 techqniques, warped and unwarped both represent different challenges for text
@@ -170,7 +170,6 @@ def create_detection_dataset(input_path, output_path, gt_file):
     cnt = 1
 
     lines = open(gt_file).readlines()
-    dict = {}
 
     print("Starting...")
     cnt = 1;
@@ -219,7 +218,6 @@ def create_detection_dataset(input_path, output_path, gt_file):
         cnt += 1
 
     writeCache(env, cache)
-
     print("Done")
 
 def create_detection_dataset_combined(input_path, output_path):
@@ -228,7 +226,7 @@ def create_detection_dataset_combined(input_path, output_path):
             print("Processing ", file)
             create_detection_dataset(input_path, output_path, os.path.join(input_path, file))
 
-def create_recognition_dataset_warped_unwarped(images_path, input_path, output_path):
+def create_recognition_dataset_warped_unwarped_from_detection_dataset(images_path, input_path, output_path):
     """
 	Create LMDB dataset for detection.
 	ARGS:
@@ -312,7 +310,7 @@ def create_recognition_dataset_warped_unwarped(images_path, input_path, output_p
 
             cnt += 1
 
-    # print(cache)
+    writeCache(env, cache)
     print("Done")
 
     ##### VALIDATION DATASET #####
@@ -353,20 +351,174 @@ def create_recognition_dataset_warped_unwarped(images_path, input_path, output_p
 
             try:
                 cache[unwarped_img_name] = [unwarped, bb, text, font]
-                cv2.imwrite(os.path.join(val_output_path, unwarped_img_name), unwarped)
             except:
                 print(unwarped_img_name + " is empty!")
 
-            if cnt % 10 == 0:
+            if cnt % 10000 == 0:
                 writeCache(env, cache)
                 cache = {}
                 print('Done ', cnt)
 
             cnt += 1
 
-    # print(cache)
+    writeCache(env, cache)
     print("Done")
 
+def create_recognition_dataset_warped_unwarped(input_path, output_path, gt_file):
+    """
+	Create LMDB dataset for detection.
+	ARGS:
+		input_path  : input lmdb detection dataset
+		output_path : LMDB output path
+	"""
+
+    val_output_path = os.path.join(output_path, "val")
+    train_output_path = os.path.join(output_path, "train")
+
+    os.makedirs(val_output_path, exist_ok=True)
+    os.makedirs(train_output_path, exist_ok=True)
+
+    print("Fetching Keys...")
+    lines = open(gt_file).readlines()
+    print("Done")
+
+    print()
+    print("Splitting train and val keys")
+    val_keys = random.sample(lines, (int)(0.1 * len(lines)))
+    train_keys = []
+    for key in lines:
+        if key not in val_keys:
+            train_keys.append(key)
+
+    # print(len(lines), len(val_keys), len(train_keys))
+    # print("Val Images", val_keys)
+    # print("Train Images", train_keys)
+    print("Done")
+
+    ##### TRAINING DATASET #####
+    print()
+    print("Start creating training dataset...")
+
+    env = lmdb.open(train_output_path, map_size=1099511627776)
+    cache = {}
+    cnt = 1
+
+    for i, key in enumerate(train_keys):
+
+        img_path, word_bb, text, font = key.split("\t")
+        img_name = os.path.basename(img_path)
+        img_path = os.path.join(input_path, img_name)
+
+        # print(line)
+        # print(img_name)
+
+        with open(img_path, 'rb') as f:
+            img = cv2.imread(img_path)
+            img_bin = f.read()
+
+        # print(word_bb)
+
+        word_bb = word_bb.split(",")
+        # print(word_bb)
+
+        word_bb = np.array([int(float(bb)) for bb in word_bb]).reshape((4, 2))
+        # print(word_bb)
+
+        key = img_name
+        # print(key)
+
+        warped, unwarped = crop_words(img, word_bb, image_name=img_name, text=text)
+
+        warped_img_name = img_name[:-4] + "_" + str(i) + "_" + "warped.jpg";
+        unwarped_img_name = img_name[:-4] + "_" + str(i) + "_" + "unwarped.jpg";
+
+        try:
+            cache[warped_img_name] = [warped.tobytes(), word_bb, text, font]
+            # cv2.imwrite(os.path.join(train_output_path, warped_img_name), warped)
+        except:
+            print(warped_img_name + " is empty!")
+
+        try:
+            cache[unwarped_img_name] = [unwarped.tobytes(), word_bb, text, font]
+            # cv2.imwrite(os.path.join(train_output_path, unwarped_img_name), unwarped)
+        except:
+            print(unwarped_img_name + " is empty!")
+
+        if cnt % 10000 == 0:
+            writeCache(env, cache)
+            cache = {}
+            print('Done ' + str(cnt) + ' /' + str(len(train_keys)))
+
+        cnt += 1
+
+    writeCache(env, cache)
+    print("Done")
+
+    ##### VALIDATION DATASET #####
+    print()
+    print("Start creating validation dataset...")
+
+    env = lmdb.open(val_output_path, map_size=1099511627776)
+    cache = {}
+    cnt = 1
+
+    for i, key in enumerate(val_keys):
+
+        img_path, word_bb, text, font = key.split("\t")
+        img_name = os.path.basename(img_path)
+        img_path = os.path.join(input_path, img_name)
+
+        # print(line)
+        # print(img_name)
+
+        with open(img_path, 'rb') as f:
+            img = cv2.imread(img_path)
+            img_bin = f.read()
+
+        # print(word_bb)
+
+        word_bb = word_bb.split(",")
+        # print(word_bb)
+
+        word_bb = np.array([int(float(bb)) for bb in word_bb]).reshape((4, 2))
+        # print(word_bb)
+
+        key = img_name
+        # print(key)
+
+        warped, unwarped = crop_words(img, word_bb, image_name=img_name, text=text)
+
+        warped_img_name = img_name[:-4] + "_" + str(i) + "_" + "warped.jpg";
+        unwarped_img_name = img_name[:-4] + "_" + str(i) + "_" + "unwarped.jpg";
+
+        try:
+            cache[warped_img_name] = [warped.tobytes(), word_bb, text, font]
+            # cv2.imwrite(os.path.join(val_output_path, warped_img_name), warped)
+        except:
+            print(warped_img_name + " is empty!")
+
+        try:
+            cache[unwarped_img_name] = [unwarped.tobytes(), word_bb, text, font]
+            # cv2.imwrite(os.path.join(val_output_path, unwarped_img_name), unwarped)
+        except:
+            print(unwarped_img_name + " is empty!")
+
+        if cnt % 10000 == 0:
+            writeCache(env, cache)
+            cache = {}
+            print('Done ' + str(cnt) + ' /' + str(len(val_keys)))
+
+        cnt += 1
+
+    writeCache(env, cache)
+    print("Done")
+
+def create_recognition_dataset_warped_unwarped_combined(input_path, output_path):
+    for file in os.listdir(input_path):
+        if file.endswith(".txt"):
+            print()
+            print("Processing ", file)
+            create_recognition_dataset_warped_unwarped(input_path, output_path, os.path.join(input_path, file))
 
 def create_recognition_dataset_from_detection_datset_folder(path, gt_file):
     lines = gt_file.readlines()
@@ -392,19 +544,15 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='crop images and create recogntion dataset')
 
-    parser.add_argument('--lang', default='ENG',
-                        help='Select language : ENG/HI')
-
-    parser.add_argument('--path', default='./output',
-                        help='Select language : ENG/HI')
-
-    parser.add_argument('--gt_file', default='./output/gt.txt',
-                        help='Select language : ENG/HI')
-
+    parser.add_argument('--input_path', help='location of folder of ST images and gt file')
+    parser.add_argument('--output_dir', help='output path for lmdb dataset')
     args = parser.parse_args()
 
     configuration.lang = args.lang
-
+    
+  
+    
     # main('./SynthText_{}.h5'.format(configuration.lang))
     # create_detection_dataset_combined("/home/manideep/Desktop/Indic OCR/hindi-sample/output", "hindi-sample-detection")
-    create_recognition_dataset_warped_unwarped("/home/manideep/Desktop/Indic OCR/hindi-sample/output", "hindi-sample-detection", "hindi-sample-recognition")
+    
+    create_recognition_dataset_warped_unwarped_combined(args.input_path, args.output_dir)
