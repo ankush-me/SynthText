@@ -6,10 +6,9 @@ results/
 /h5py_files/
 /model_trained/
 /mcg/
-/.idea/
 /libs/
 *.png
-
+.idea/*.xml
 *.pyc
 *.jpg
 *.pfm
@@ -18,9 +17,9 @@ img_lmdb/
 dep_lmdb/
 seg_lmdb/
 
-.idea/
 *.xml
 *.tar
+*.iml
 
 hindi-sample-detection/
 hindi-sample-recognition/
