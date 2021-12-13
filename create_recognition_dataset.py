@@ -12,10 +12,6 @@ import os.path
 import random
 
 import h5py
-import pandas as pd
-import pickle5
-
-import configuration
 from common import *
 from math import floor, ceil
 
@@ -177,15 +173,15 @@ def create_recognition_dataset_warped_unwarped(input_path, output_path, gt_file)
     print()
     print("Start creating training dataset...")
 
-    try:
-        for keys, output_path in [(train_keys, train_output_path), (val_keys, val_output_path)]:
-            
-            env = lmdb.open(output_path, map_size=1099511627776)
-            cache = {}
-            cnt = 1
-            
-            for i, key in enumerate(keys):
+   
+    for keys, output_path in [(train_keys, train_output_path), (val_keys, val_output_path)]:
         
+        env = lmdb.open(output_path, map_size=1099511627776)
+        cache = {}
+        cnt = 1
+        
+        for i, key in enumerate(keys):
+            try :
                 img_path, word_bb, text, font = key.split("\t")
                
                 img_name = os.path.basename(img_path)
@@ -206,17 +202,16 @@ def create_recognition_dataset_warped_unwarped(input_path, output_path, gt_file)
                     cache[labelKey] = text.encode()
                     cache[fontKey] = font.encode()
                     cnt+=1
-                
-                if cnt % 10000 == 1:
-                    writeCache(env, cache)
-                    cache = {}
-                   
-                    print('Done ' + str(cnt) + ' /' + str(len(train_keys)))
-        
-            writeCache(env, cache)
-            print("Done")
-    except Exception:
-        print("error occurred")
+            except Exception:
+                print("error occurred: continuing")
+            if cnt % 10000 == 1:
+                writeCache(env, cache)
+                cache = {}
+               
+                print('Done ' + str(cnt) + ' /' + str(len(train_keys)))
+    
+        writeCache(env, cache)
+        print("Done")
         
 def create_recognition_dataset_warped_unwarped_combined(input_path, output_path):
     gt_file_path = os.path.join("gt.txt")

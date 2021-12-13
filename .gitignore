@@ -23,3 +23,9 @@ seg_lmdb/
 
 hindi-sample-detection/
 hindi-sample-recognition/
+gt.txt
+
+
+.idea/.gitignore
+.idea/inspectionProfiles/Project_Default.xml
+.idea/vcs.xml
