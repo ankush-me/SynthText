@@ -209,8 +209,11 @@ def create_recognition_dataset_warped_unwarped(input_path, output_path, gt_file)
                 cache = {}
                
                 print('Done ' + str(cnt) + ' /' + str(len(train_keys)))
-    
+        
         writeCache(env, cache)
+        cache['num-samples'.encode()] = str(len(keys)).encode()
+        writeCache(env, cache)
+        
         print("Done")
         
 def create_recognition_dataset_warped_unwarped_combined(input_path, output_path):
