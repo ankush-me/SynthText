@@ -207,11 +207,11 @@ def create_recognition_dataset_warped_unwarped(input_path, output_path, gt_file)
             if cnt % 10000 == 1:
                 writeCache(env, cache)
                 cache = {}
-               
+        
                 print('Done ' + str(cnt) + ' /' + str(len(train_keys)))
         
         writeCache(env, cache)
-        cache['num-samples'.encode()] = str(len(keys)).encode()
+        cache['num-samples'.encode()] = str(cnt-1).encode()
         writeCache(env, cache)
         
         print("Done")
