@@ -6,7 +6,7 @@ for img in images:
 	img = cv2.imread(img)
 	cv2.imwrite("gt1_{}".format(i))
 	"""
-import lmdb
+"""import lmdb
 
 def writeCache(env, cache):
     # print("Writing to LMDB")
@@ -16,8 +16,11 @@ def writeCache(env, cache):
 
 
 
-env = lmdb.open("/home/shubham/Documents/MTP/datasets/detection/hindi/training/ST", map_size=1099511627776)
+env = lmdb.open("/home/shubham/Documents/MTP/datasets/detection/hindi/validation/ST_valid", map_size=1099511627776)
 with env.begin(write=True) as txn:
 	cursor = txn.cursor()
 	num= int(txn.get('num-samples'.encode()))
-	cursor.replace('num-samples'.encode() , str(2*num-4).encode())
+	cursor.replace('num-samples'.encode() , str(4257513).encode())"""
+
+
+

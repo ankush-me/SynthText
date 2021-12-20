@@ -186,7 +186,7 @@ def create_recognition_dataset_warped_unwarped(input_path, output_path, gt_file)
                
                 img_name = os.path.basename(img_path)
                 img_path = os.path.join(input_path, img_name)
-        
+                
                 with open(img_path, 'rb') as f:
                     img = cv2.imread(img_path)
     
@@ -209,7 +209,7 @@ def create_recognition_dataset_warped_unwarped(input_path, output_path, gt_file)
                 cache = {}
         
                 print('Done ' + str(cnt) + ' /' + str(2*len(train_keys)))
-        
+            
         writeCache(env, cache)
         cache['num-samples'.encode()] = str(cnt-1).encode()
         writeCache(env, cache)

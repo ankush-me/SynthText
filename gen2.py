@@ -191,7 +191,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Genereate Synthetic Scene-Text Images')
 	parser.add_argument('--viz', action='store_true', dest='viz', default=False,
 	                    help='flag for turning on visualizations')
-	parser.add_argument('--lang', default='ENG',
+	parser.add_argument('--lang',
 	                    help='Select language : ENG/HI')
 	
 	parser.add_argument("--data_path", default="data/")
