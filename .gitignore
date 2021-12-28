@@ -1,7 +1,7 @@
 .idea/
 __pycache__/
 results/
-/data/
+/data/*
 /temp/
 /h5py_files/
 /model_trained/

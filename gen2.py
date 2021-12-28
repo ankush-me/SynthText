@@ -126,7 +126,7 @@ def main(data_path,depth_dir, img_dir, gt_file_name,out_dir,  viz=False):
 	gt_file = open("{}/{}".format(out_dir,gt_file_name), "w")
 	range_list= list(range(start_idx, end_idx))
 	random.shuffle(range_list)
-	res_list=[]
+	
 	for i in range(start_idx, end_idx):
 
 		imname = imnames[range_list[i]].strip()
