@@ -36,7 +36,7 @@ This script will generate random scene-text image samples and store them in an h
 python visualize_results.py
 ```
 ### Pre-generated Dataset
-A dataset with approximately 800000 synthetic scene-text images generated with this code can be found in the `SynthText.zip` file in the torrent [here](https://academictorrents.com/details/2dba9518166cbd141534cbf381aa3e99a087e83c).
+A dataset with approximately 800000 synthetic scene-text images generated with this code can be found in the `SynthText.zip` file in the torrent [here](https://academictorrents.com/details/2dba9518166cbd141534cbf381aa3e99a087e83c); dataset detais/description in `readme.txt` file in the same torrent.
 
 ### Adding New Images
 Segmentation and depth-maps are required to use new images as background. Sample scripts for obtaining these are available [here](https://github.com/ankush-me/SynthText/tree/master/prep_scripts).
